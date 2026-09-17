@@ -20,7 +20,7 @@ free, not a 12-month trial. A custom domain adds ~$12-15/year for registration p
 
 This directory is something you run **once, yourself**, with your own AWS
 credentials, to create the bucket/distribution/role. It is not run by CI - GitHub
-Actions only ever deploys *into* the infrastructure this creates, it never creates
+Actions only ever deploys _into_ the infrastructure this creates, it never creates
 or changes the infrastructure itself.
 
 ## Prerequisites
@@ -47,10 +47,10 @@ terraform apply
 `terraform apply` prints outputs when it finishes. You'll need three of them for the
 next step (setting up the deploy workflow):
 
-| Output                      | Goes into GitHub secret |
+| Output                       | Goes into GitHub secret  |
 | ---------------------------- | ------------------------ |
 | `github_deploy_role_arn`     | `AWS_DEPLOY_ROLE_ARN`    |
-| `bucket_name`                 | `AWS_S3_BUCKET`          |
+| `bucket_name`                | `AWS_S3_BUCKET`          |
 | `cloudfront_distribution_id` | `AWS_CLOUDFRONT_DIST_ID` |
 | `aws_region`                 | `AWS_REGION`             |
 
@@ -75,7 +75,7 @@ has run.
   for a single-person portfolio project. If you ever collaborate with others or want
   state locking, swap the commented-out `backend "s3"` block in `versions.tf` for a
   real S3 backend bucket.
-- **`create_oidc_provider`**: an AWS account can only have *one* OIDC provider
+- **`create_oidc_provider`**: an AWS account can only have _one_ OIDC provider
   registered per URL. If you've already set up GitHub Actions OIDC for another
   project in this same AWS account, set `create_oidc_provider = false` and
   `existing_oidc_provider_arn` to that provider's ARN instead - otherwise `apply`
@@ -93,7 +93,7 @@ has run.
 - I wrote and reviewed this HCL carefully, but `terraform` wasn't available in the
   sandbox this was built in, so I was not able to run `terraform validate` or
   `terraform fmt` against it. Run both yourself as the first step after `terraform
-  init`, before `plan`/`apply` - they're fast, and `fmt` will just clean up
+init`, before `plan`/`apply` - they're fast, and `fmt` will just clean up
   whitespace/alignment if anything's off.
 
 ## Tearing it down

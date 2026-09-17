@@ -121,7 +121,7 @@ Fix: group by name **and** tournament ID together, with a display-time
 disambiguation label (the start date) when more than one group shares a name:
 
 ```js
-const key = name + "::" + (h.tourneyId || "");
+const key = name + '::' + (h.tourneyId || '');
 ```
 
 Regression test in `tests/grouping.test.js` constructs four hands across three
@@ -131,7 +131,7 @@ hands correctly partitioned by ID even when the ID ordering doesn't match hand o
 ### 2. Hands were sorted by hand ID instead of timestamp
 
 The hand table and the impact chart sorted hands by their numeric ID. Hand IDs are
-*usually* increasing with time, but not strictly - and one sorting-order mismatch was
+_usually_ increasing with time, but not strictly - and one sorting-order mismatch was
 enough to hide the actual elimination hand behind an unrelated, later-sorted fold,
 making it look (from the chart) like the player busted on a hand they'd actually
 folded, several spots earlier.
@@ -142,13 +142,13 @@ back to ID only when it isn't:
 ```js
 export function handSortKey(h) {
   if (h.dateStr && h.timeStr) {
-    return h.dateStr.replace(/\//g, "") + h.timeStr.replace(/:/g, "");
+    return h.dateStr.replace(/\//g, '') + h.timeStr.replace(/:/g, '');
   }
-  return String(h.id || "0").padStart(20, "0");
+  return String(h.id || '0').padStart(20, '0');
 }
 ```
 
-`tests/grouping.test.js` includes a fixture where a lower hand ID has a *later*
+`tests/grouping.test.js` includes a fixture where a lower hand ID has a _later_
 timestamp than a higher one, and asserts the chronological order wins.
 
 Both bugs shipped in the original single-file version and went unnoticed until the
