@@ -1,0 +1,20 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored - it's fine for it to contain real values,
+# it just never gets committed.
+
+github_owner  = "your-github-username"
+github_repo   = "poker-hand-review"
+github_branch = "main"
+
+# Leave these as-is unless you have a reason to change them.
+# project_name = "poker-hand-review"
+# aws_region   = "ap-southeast-2"
+
+# Only set these if this is NOT the first project in this AWS account to use
+# GitHub Actions OIDC - see the warning on create_oidc_provider in variables.tf.
+# create_oidc_provider       = false
+# existing_oidc_provider_arn = "arn:aws:iam::123456789012:oidc-provider/token.actions.githubusercontent.com"
+
+# Optional custom domain - leave blank to use the free *.cloudfront.net URL.
+# domain_name     = "poker.yourdomain.com"
+# route53_zone_id = "Z0123456789ABCDEFGHIJ"
