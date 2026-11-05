@@ -14,7 +14,7 @@ histories to an account is not built yet. See `README.md` for user-facing behavi
 - `src/engine` never imports from `src/render`.
 - Run `npm test`, `npm run lint` and `npm run format:check` before every commit.
 - Work on a branch, not on `main`.
-- Don't push without asking.
+- Push feature branches without asking. Ask before merging or pushing to `main`, since that deploys the live site.
 
 ## Learning
 
@@ -24,6 +24,9 @@ This project is also a way for the owner to learn software delivery, so teaching
   skip the ones they do.
 - Explain what you did and why, in plain language, using this project as the example.
 - Once they say they know a concept, don't ask about it again.
+- Expand abbreviations with their full name and a few words on what they do, in brackets, e.g. OIDC (OpenID Connect:
+  proving who someone is to another service) or PKCE (Proof Key for Code Exchange: protects the login code). Do this in
+  explanations and in new code comments.
 
 ## Commands
 
