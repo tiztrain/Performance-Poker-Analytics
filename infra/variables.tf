@@ -20,6 +20,16 @@ variable "github_repo" {
   type        = string
 }
 
+variable "github_owner_id" {
+  description = "Numeric GitHub owner ID, from https://api.github.com/users/<owner> (field \"id\")."
+  type        = string
+}
+
+variable "github_repo_id" {
+  description = "Numeric GitHub repository ID, from https://api.github.com/repos/<owner>/<repo> (field \"id\")."
+  type        = string
+}
+
 variable "github_branch" {
   description = "Branch allowed to assume the deploy role (deploys run on merge to this branch)."
   type        = string
