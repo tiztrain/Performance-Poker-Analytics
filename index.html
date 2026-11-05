@@ -74,6 +74,52 @@
         font-size: 14px;
         max-width: 640px;
       }
+      .header-controls {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .account {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        font-size: 12.5px;
+      }
+      .account[hidden] {
+        display: none;
+      }
+      .account-email {
+        color: var(--text-muted);
+        max-width: 220px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .account-btn {
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        padding: 7px 14px;
+        font-size: 12.5px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: var(--sans);
+      }
+      .account-btn:hover {
+        background: var(--bg-hover);
+      }
+      .account-btn.primary-outline {
+        border-color: var(--accent-gold-dim);
+        color: var(--accent-gold);
+      }
+      .account-error {
+        flex-basis: 100%;
+        color: var(--accent-red);
+        font-size: 12px;
+      }
       .unit-toggle {
         display: flex;
         flex-shrink: 0;
@@ -582,9 +628,12 @@
             where the pot odds required unusually high equity — for you to review, not a verdict.
           </p>
         </div>
-        <div class="unit-toggle" id="unit-toggle">
-          <button class="unit-btn active" data-mode="bb">BB</button>
-          <button class="unit-btn" data-mode="chips">Chips</button>
+        <div class="header-controls">
+          <div class="account" id="account" hidden></div>
+          <div class="unit-toggle" id="unit-toggle">
+            <button class="unit-btn active" data-mode="bb">BB</button>
+            <button class="unit-btn" data-mode="chips">Chips</button>
+          </div>
         </div>
       </header>
 

@@ -65,6 +65,26 @@ automatically.
 `site_url` in the output is where the site will be reachable once the first deploy
 has run.
 
+### Turning on login
+
+The same `apply` creates a Cognito user pool for accounts (`auth.tf`). To show the
+sign-in buttons on the live site, set two more outputs as repository **variables**
+(the **Variables** tab next to Secrets, since neither is secret: both end up in the
+public JavaScript):
+
+| Output              | Goes into GitHub variable |
+| ------------------- | ------------------------- |
+| `cognito_domain`    | `COGNITO_DOMAIN`          |
+| `cognito_client_id` | `COGNITO_CLIENT_ID`       |
+
+The next deploy picks them up. Until they're set, the site builds and works without
+login. For local dev, put the same values in `.env.local` (see `.env.example`); the
+pool allows `http://localhost:5173/` as a redirect through `auth_dev_redirect_urls`.
+
+Cognito sends verification emails itself, which is limited to 50 a day. If the site
+uses a custom domain, `apply` again after changing `domain_name` so the allowed
+redirect URLs follow.
+
 ## Notes / things worth knowing
 
 - **State is local** (a `terraform.tfstate` file in this directory, gitignored). Fine
@@ -91,13 +111,14 @@ perform sts:AssumeRoleWithWebIdentity` in the deploy workflow.
   the free `*.cloudfront.net` URL. If you do set it, also set `route53_zone_id` if you
   want Terraform to create the DNS record and validate the ACM certificate
   automatically; otherwise you'll need to validate/point DNS manually.
-- I wrote and reviewed this HCL carefully, but `terraform` wasn't available in the
-  sandbox this was built in, so I was not able to run `terraform validate` or
-  `terraform fmt` against it. Run both yourself as the first step after `terraform
-init`, before `plan`/`apply` - they're fast, and `fmt` will just clean up
-  whitespace/alignment if anything's off.
+- `terraform fmt` and `terraform validate` pass against the pinned provider, but the
+  config hasn't been `plan`ned against a real account from the sandbox it was written
+  in. Review `terraform plan` before every `apply`.
 
 ## Tearing it down
+
+The user pool has deletion protection on, because deleting it deletes every account.
+Set `deletion_protection = "INACTIVE"` in `auth.tf` and `apply` before destroying.
 
 ```bash
 terraform destroy

@@ -42,6 +42,11 @@ jobs:
 
       - name: Build
         run: npm run build
+        # Not secrets: both end up in the public JavaScript. If they're unset, the
+        # site builds without the sign-in buttons.
+        env:
+          VITE_COGNITO_DOMAIN: ${{ vars.COGNITO_DOMAIN }}
+          VITE_COGNITO_CLIENT_ID: ${{ vars.COGNITO_CLIENT_ID }}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6

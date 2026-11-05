@@ -2,6 +2,19 @@ import { parseAll } from './engine/parser.js';
 import { renderResults } from './render/results.js';
 import { SAMPLE } from './sample-hand.js';
 import { displayMode, currentRerender, setDisplayMode } from './state.js';
+import { authEnabled, completeLoginIfRedirected, currentUser, login, logout, signup } from './auth/session.js';
+import { renderAccount } from './render/account.js';
+
+// ---------- Optional login ----------
+// Hidden entirely when the build has no Cognito settings (see .env.example).
+async function initAccount() {
+  if (!authEnabled) return;
+  const el = document.getElementById('account');
+  const error = await completeLoginIfRedirected();
+  renderAccount(el, { user: currentUser(), error, onLogin: login, onSignup: signup, onLogout: logout });
+  el.hidden = false;
+}
+initAccount();
 
 document.getElementById('load-sample').addEventListener('click', () => {
   document.getElementById('hh-input').value = SAMPLE;
