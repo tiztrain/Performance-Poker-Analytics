@@ -54,14 +54,10 @@ next step (setting up the deploy workflow):
 | `cloudfront_distribution_id` | `AWS_CLOUDFRONT_DIST_ID` |
 | `aws_region`                 | `AWS_REGION`             |
 
-Set these under the GitHub repo's **Settings → Secrets and variables → Actions**.
-The deploy workflow (`.github/workflows/deploy.yml`) targets a GitHub
-[environment](https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment)
-called `production` - GitHub creates this automatically the first time the workflow
-runs, or you can create it yourself under **Settings → Environments** first if you
-want to add protection rules (e.g. requiring manual approval before every deploy).
-You can set the four secrets above either as plain repository secrets or scoped to
-the `production` environment - either works with this workflow.
+Set these as repository secrets under the GitHub repo's **Settings → Secrets and
+variables → Actions**. The deploy job deliberately doesn't use a GitHub environment:
+that would change the subject in its OIDC token to `environment:<name>`, which the
+deploy role's branch-based trust policy doesn't accept.
 
 Once they're set, pushes to `main` will lint, format-check, test, build, and deploy
 automatically.
@@ -81,11 +77,16 @@ has run.
   `existing_oidc_provider_arn` to that provider's ARN instead - otherwise `apply`
   will fail with `EntityAlreadyExists`.
 - **The deploy role is scoped tightly**: its trust policy only allows
-  `sts:AssumeRoleWithWebIdentity` from `repo:<github_owner>/<github_repo>` on the
-  exact branch in `github_branch` (default `main`) - a workflow run from a fork or a
-  PR branch cannot assume it. Its permissions policy only allows writing to this one
-  S3 bucket and invalidating this one CloudFront distribution, nothing else in the
-  account.
+  `sts:AssumeRoleWithWebIdentity` from this repo on the exact branch in `github_branch`
+  (default `main`) - a workflow run from a fork or a PR branch cannot assume it. Its
+  permissions policy only allows writing to this one S3 bucket and invalidating this
+  one CloudFront distribution, nothing else in the account.
+- **The trust policy uses GitHub's immutable subject format**:
+  `repo:<owner>@<owner-id>/<repo>@<repo-id>:ref:refs/heads/<branch>`. GitHub repos
+  created after 15 July 2026 use this by default. Older repos keep
+  `repo:<owner>/<repo>:ref:refs/heads/<branch>` unless they opt in, so this config
+  would need changing for one of those. A mismatch shows up as `Not authorized to
+perform sts:AssumeRoleWithWebIdentity` in the deploy workflow.
 - **Custom domain is optional and off by default.** Leave `domain_name` blank to use
   the free `*.cloudfront.net` URL. If you do set it, also set `route53_zone_id` if you
   want Terraform to create the DNS record and validate the ACM certificate

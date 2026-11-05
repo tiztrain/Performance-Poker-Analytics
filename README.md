@@ -6,8 +6,7 @@ more), a per-hand table with table positions (UTG/HJ/CO/BTN/SB/BB), a stack-impa
 chart, and a day-by-day comparison across sessions. Everything is computed and
 rendered in the browser, and hand histories are never uploaded anywhere.
 
-Live: _(deployed URL goes here after the first `terraform apply` + push to `main` -
-see [`infra/README.md`](infra/README.md))_
+Live: <https://d168sqg7uqysns.cloudfront.net>
 
 This started as a single 1900-line HTML file with an inline `<script>` block. This
 repo is that tool rebuilt as a normal, testable, CI/CD'd web project, partly as a

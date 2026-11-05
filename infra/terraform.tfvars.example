@@ -6,6 +6,12 @@ github_owner  = "your-github-username"
 github_repo   = "poker-hand-review"
 github_branch = "main"
 
+# Numeric IDs, needed for GitHub's OIDC token format. Find them in the "id" field of:
+#   https://api.github.com/users/<github_owner>
+#   https://api.github.com/repos/<github_owner>/<github_repo>
+github_owner_id = "123456"
+github_repo_id  = "456789"
+
 # Leave these as-is unless you have a reason to change them.
 # project_name = "poker-hand-review"
 # aws_region   = "ap-southeast-2"
