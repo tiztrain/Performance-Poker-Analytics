@@ -15,6 +15,15 @@ There is no backend and no persistence. See `README.md` for user-facing behavior
 - Work on a branch, not on `main`.
 - Don't push without asking.
 
+## Learning
+
+This project is also a way for the owner to learn software delivery, so teaching is part of every task.
+
+- Before work that relies on a concept they may not know, ask whether they know it. Explain the ones they don't, and
+  skip the ones they do.
+- Explain what you did and why, in plain language, using this project as the example.
+- Once they say they know a concept, don't ask about it again.
+
 ## Commands
 
 Requires Node 22.13+ or 24, the overlap of what `vitest` 5 and `eslint` 10 support. CI uses 24.

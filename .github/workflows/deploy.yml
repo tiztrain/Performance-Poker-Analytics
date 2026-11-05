@@ -21,7 +21,6 @@ jobs:
   deploy:
     name: Build and deploy to AWS
     runs-on: ubuntu-latest
-    environment: production
     steps:
       - uses: actions/checkout@v4
 

@@ -1,8 +1,8 @@
 locals {
-  bucket_name        = "${var.project_name}-site-${data.aws_caller_identity.current.account_id}"
-  use_domain         = var.domain_name != ""
-  oidc_url           = "token.actions.githubusercontent.com"
-  oidc_provider_arn  = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : var.existing_oidc_provider_arn
+  bucket_name       = "${var.project_name}-site-${data.aws_caller_identity.current.account_id}"
+  use_domain        = var.domain_name != ""
+  oidc_url          = "token.actions.githubusercontent.com"
+  oidc_provider_arn = var.create_oidc_provider ? aws_iam_openid_connect_provider.github[0].arn : var.existing_oidc_provider_arn
 }
 
 data "aws_caller_identity" "current" {}
@@ -113,8 +113,8 @@ resource "aws_cloudfront_distribution" "site" {
     cached_methods         = ["GET", "HEAD"]
     target_origin_id       = "s3-site"
     viewer_protocol_policy = "redirect-to-https"
-    compress                = true
-    cache_policy_id          = "658327ea-f89d-4fab-a63d-7e88639e58f6" # AWS managed "CachingOptimized"
+    compress               = true
+    cache_policy_id        = "658327ea-f89d-4fab-a63d-7e88639e58f6" # AWS managed "CachingOptimized"
   }
 
   restrictions {
