@@ -1,10 +1,10 @@
 # Poker Hand Review
 
 A client-side tool for analyzing CoinPoker tournament hand histories: paste or drop
-hand-history text files in, get VPIP/PFR/3-bet/fold-to-3bet/c-bet/WTSD stats, a
-per-hand table with table positions (UTG/HJ/CO/BTN/SB/BB), a stack-impact chart, and
-a day-by-day comparison across sessions - all computed and rendered entirely in the
-browser, nothing is uploaded anywhere.
+hand-history text files in, get frequency stats (VPIP, PFR, 3-bet, c-bet, WTSD and
+more), a per-hand table with table positions (UTG/HJ/CO/BTN/SB/BB), a stack-impact
+chart, and a day-by-day comparison across sessions. Everything is computed and
+rendered in the browser, and hand histories are never uploaded anywhere.
 
 Live: _(deployed URL goes here after the first `terraform apply` + push to `main` -
 see [`infra/README.md`](infra/README.md))_
@@ -16,16 +16,77 @@ of software delivery that don't show up when you're just writing a script for
 yourself: module boundaries, a real test suite, linting/formatting enforced in CI, and
 infrastructure-as-code for hosting.
 
+## Using it
+
+1. Load hands: upload one or more `.txt`/`.log` exports, drag files onto the text box,
+   or paste text and click **Analyze hands**. **Load the 4-hand sample** fills the box
+   with example hands if you just want to see the output (click **Analyze hands** after).
+2. Pick what to look at. Tournaments are listed by format, and selecting several
+   combines them. If the hands span more than one day, you also get date filters and a
+   **Day comparison** view.
+3. Switch every amount between big blinds and chips with the **BB / Chips** toggle in
+   the top corner.
+
+### What you get
+
+- **Stats, one panel per format:** VPIP, PFR, 3-bet, 3-bet defense, fold to 3-bet,
+  c-bet, fold to c-bet, check-raise, WTSD, W$SD and aggression factor. Formats (regular,
+  turbo, hyper, satellite) are classified from the tournament name and kept separate,
+  because correct strategy differs too much between them to blend the numbers.
+- **Benchmarks:** regular and turbo panels color-code 3-bet defense, fold to 3-bet,
+  fold to c-bet and check-raise against target ranges. Hyper and satellite panels show
+  a note instead, since those fixed targets don't apply there.
+- **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
+- **Hand table**, with these filters:
+
+  | Filter                    | Shows                                                                   |
+  | ------------------------- | ----------------------------------------------------------------------- |
+  | Went to showdown          | Hands that reached a real showdown                                      |
+  | Flagged calls             | Calls where the pot odds required more than 40% equity                  |
+  | Possibly should've folded | Calls with no pair, or a pair below the board's second-highest card     |
+  | Flagged folds             | Folds where you needed under 20% equity to continue                     |
+  | Missed 3-bet spots        | Hands where you called an opening raise instead of re-raising           |
+  | Coin flips / races        | Preflop all-in style spots that showed down as a flip or dominated pair |
+
+### Limits
+
+- **Flags are prompts for review, not verdicts.** Frequencies and pot-odds math come
+  straight from the parsed actions, but there is no solver or equity engine, so
+  hand-strength flags are pattern-based.
+- **Multiway postflop spots** are tracked less precisely for c-bet and check-raise.
+- **Race detection** only sees hands that reached showdown, and compares ranks only, so
+  it misses some real races.
+- **Input format:** the parser targets CoinPoker's NLH tournament export, with the
+  player labeled `Hero`. Hand blocks must start with `CoinPoker Hand #`; see
+  [`src/sample-hand.js`](src/sample-hand.js) for a full example. Hands with no
+  tournament line fall into an "Unknown tournament" group.
+
+### Privacy
+
+Files are read locally in the page and the app makes no network requests with your
+data: there is no backend, analytics or browser storage, so results are gone when you
+reload. The only external request is for the web fonts, loaded from Google Fonts.
+
 ## Running it locally
+
+Requires Node 22.13+ or 24 (the versions both `vitest` and `eslint` support). CI runs
+on 24.
 
 ```bash
 npm install
-npm run dev       # dev server with hot reload
-npm test          # vitest, 38 tests
-npm run lint       # eslint
-npm run format:check   # prettier --check
-npm run build      # production build to dist/
+npm run dev
 ```
+
+| Command                | What it does                            |
+| ---------------------- | --------------------------------------- |
+| `npm run dev`          | Dev server with hot reload              |
+| `npm test`             | Run the test suite once (Vitest)        |
+| `npm run test:watch`   | Run tests in watch mode                 |
+| `npm run lint`         | ESLint                                  |
+| `npm run format`       | Format everything with Prettier         |
+| `npm run format:check` | Check formatting without changing files |
+| `npm run build`        | Production build to `dist/`             |
+| `npm run preview`      | Serve the production build locally      |
 
 ## Architecture
 
@@ -59,14 +120,14 @@ clicking through the UI by hand after every change.
 
 Vitest, 38 tests across the engine layer: hand evaluation edge cases (wheel straights,
 kicker comparisons), hand-history parsing, tournament format classification, position
-labeling across table sizes, and the stat aggregator. Two of the test files
-(`grouping.test.js`) exist specifically to pin down bugs found while using the tool on
-real data - see below.
+labeling across table sizes, and the stat aggregator. `tests/grouping.test.js` exists
+specifically to pin down two bugs found while using the tool on real data - see below.
 
 ## CI/CD
 
 - **`.github/workflows/ci.yml`** - runs on every push/PR to `main`: lint, format
-  check, test, build. This is the gate; nothing merges to `main` without it.
+  check, test, build. To make this a hard gate on merging, mark it as a required
+  status check in GitHub's branch protection settings for `main`.
 - **`.github/workflows/deploy.yml`** - runs on push to `main`: same checks, then
   builds and syncs `dist/` to S3 and invalidates the CloudFront cache. Authenticates
   to AWS via OIDC - GitHub issues a short-lived identity token, AWS exchanges it for
@@ -161,8 +222,7 @@ Deliberately out of scope for this phase, to keep it shippable:
 
 - Login / accounts, so previously-uploaded hand histories persist and can be pulled
   up again without re-uploading the file each time
-- A poker-themed visual redesign (the current UI is intentionally plain - functional,
-  not styled to not look AI-generated)
+- A poker-themed visual redesign (the current UI is intentionally plain and functional)
 
 These need their own design pass (in particular: where hand-history data would be
 stored, and what a lightweight-but-real auth flow looks like for a static-hosted

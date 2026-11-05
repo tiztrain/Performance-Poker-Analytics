@@ -44,7 +44,7 @@ terraform plan   # review what it's about to create
 terraform apply
 ```
 
-`terraform apply` prints outputs when it finishes. You'll need three of them for the
+`terraform apply` prints outputs when it finishes. You'll need four of them for the
 next step (setting up the deploy workflow):
 
 | Output                       | Goes into GitHub secret  |
