@@ -229,12 +229,7 @@ Both bugs shipped in the original single-file version and went unnoticed until t
 output was checked against what actually happened at the table - the regression tests
 above are there so a future refactor can't silently reintroduce either one.
 
-## Roadmap (phase 2, in progress)
+## Roadmap
 
-- [x] Login and account creation, via Amazon Cognito's hosted pages with the
-      authorization code + PKCE flow (`infra/auth.tf`, `src/auth/`)
-- [ ] Save uploaded hand histories to the signed-in account, so they can be pulled up
-      again without re-uploading. Open design question: where the data lives (S3 per
-      user via a Cognito identity pool, or an API with a database), and keeping the
-      session alive past an hour with refresh tokens
-- [ ] A poker-themed visual redesign (the current UI is intentionally plain and functional)
+Login and account creation are done. The full plan, build order and open questions are in
+[`docs/ROADMAP.md`](docs/ROADMAP.md).
