@@ -113,8 +113,8 @@ tables of correct all-in and call ranges by stack size and position), in chip te
 
 Private notes and stats per opponent (hands seen, VPIP (voluntarily put money in pot), PFR (preflop raise), 3-bet,
 fold to c-bet (continuation bet), showdowns, tags), each with sample size and confidence. Shown only in post-session
-review. Opponents are still anonymised in every export and AI prompt. Depends on real exports showing consistent names
-(open question 1).
+review. Opponents are still anonymised in every export and AI prompt. Exports show opponents as IDs, not names, so this
+depends on those IDs being stable (open question 1).
 
 ### 5.11 Bluff analysis
 
@@ -133,7 +133,8 @@ Saves the browser data to the signed-in account (needs a small API and storage, 
 
 ### 5.13 Play-quality score
 
-Headline unit is open (question 2). Built from objective checks (push/fold deviations, calls below required equity,
+Shown in two units, each split by tournament stage (deep, middle, short): big blinds per 100 hands (each hand in its own
+big blind), and % of stack lost, because a 5bb mistake at 15bb deep hurts far more than at 100bb. Built from objective checks (push/fold deviations, calls below required equity,
 all-in EV, flag costs), with a breakdown, the best and costliest decisions, and a trend against your own average.
 
 ### 5.14 In-app AI discussion
@@ -173,9 +174,7 @@ Done: login and account creation (Cognito hosted pages, PR #3).
 
 ## 8. Open questions
 
-1. **Do real exports show opponents' screen names consistently across hands and tournaments?** The sample file is
-   anonymised. If CoinPoker hides or rotates names, the opponent database can't link hands to people.
-2. **Score unit.** Big blinds grow during a tournament. Each hand's cost is already measured in that hand's own big blind,
-   but a 5bb mistake hurts more at 15bb deep than at 100bb. Options: big blinds per 100 hands, % of stack lost, or both,
-   split by tournament stage.
-3. **Volume.** Roughly how many tournaments or hands a week? This sets how quickly rolling stats become reliable.
+1. **Are opponent IDs stable?** Exports show opponents as an ID (like `7581a7d2`), not a screen name. If the same player
+   keeps the same ID across hands and tournaments, the opponent database can key on it. If IDs change per table or
+   tournament, it can't link hands to people.
+2. **Volume.** Roughly how many tournaments or hands a week? This sets how quickly rolling stats become reliable.
