@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 Client-side analyzer for CoinPoker tournament hand histories: vanilla JS (no framework, no TypeScript) built with Vite.
-There is no backend and no persistence. See `README.md` for user-facing behavior and the bug case studies, and
+There is no backend of our own and no saved data. Optional login uses Amazon Cognito's hosted pages (phase 2); saving hand
+histories to an account is not built yet. See `README.md` for user-facing behavior and the bug case studies, and
 `infra/README.md` for the AWS setup.
 
 ## Rules
@@ -13,7 +14,7 @@ There is no backend and no persistence. See `README.md` for user-facing behavior
 - `src/engine` never imports from `src/render`.
 - Run `npm test`, `npm run lint` and `npm run format:check` before every commit.
 - Work on a branch, not on `main`.
-- Don't push without asking.
+- Push feature branches without asking. Ask before merging or pushing to `main`, since that deploys the live site.
 
 ## Learning
 
@@ -23,6 +24,9 @@ This project is also a way for the owner to learn software delivery, so teaching
   skip the ones they do.
 - Explain what you did and why, in plain language, using this project as the example.
 - Once they say they know a concept, don't ask about it again.
+- Expand abbreviations with their full name and a few words on what they do, in brackets, e.g. OIDC (OpenID Connect:
+  proving who someone is to another service) or PKCE (Proof Key for Code Exchange: protects the login code). Do this in
+  explanations and in new code comments.
 
 ## Commands
 
@@ -53,13 +57,18 @@ Data flows one way:
 -> HTML strings.
 
 - **`src/engine/`** is pure logic with no DOM access. Tests run in Vitest's
-  `node` environment and only cover this layer, so anything that needs testing belongs here.
+  `node` environment and cover this layer plus `src/auth/oauth.js`, so anything that needs testing belongs in a pure
+  module.
 - **`src/render/`** builds HTML strings, assigns them to `innerHTML`, then binds events. `results.js` is the orchestrator:
   date, tournament and view selection all live in closures inside `renderResults`, and its `rerender()` redraws from
   them. New view state goes there.
 - **`src/state.js`** holds only the BB/chips display mode and a pointer to the current `rerender`, so the unit toggle in
   `main.js` can redraw whichever view is on screen. Amounts must be formatted through the helpers in
   `src/render/format.js` to respect that mode.
+- **`src/auth/`** handles optional login. `oauth.js` is pure (URL building, PKCE, JWT decoding) and is tested;
+  `session.js` does the redirects, `sessionStorage` and token request. Login is on only when `VITE_COGNITO_DOMAIN` and
+  `VITE_COGNITO_CLIENT_ID` are set at build time, so the app must keep working with `authEnabled` false. Never decode a
+  token to grant access in the browser: anything that trusts a token must verify its signature server-side.
 - **`index.html`** contains all the CSS, inline in a `<style>` block, including the color variables the render code
   references. There are no separate stylesheets.
 
@@ -92,5 +101,6 @@ silently wrong or missing data rather than an error.
 
 Pushes to `main` run `.github/workflows/deploy.yml`, which repeats the CI checks, then syncs `dist/` to S3 and invalidates
 CloudFront, authenticating through GitHub OIDC with no stored AWS keys. Terraform in `infra/` is applied manually and is
-never run by CI. The deploy role's trust policy is limited to the branch in `github_branch` (default `main`), so a branch
+never run by CI. The build reads the Cognito settings from the `COGNITO_DOMAIN` and `COGNITO_CLIENT_ID` repository
+variables. The deploy role's trust policy is limited to the branch in `github_branch` (default `main`), so a branch
 rename needs matching workflow and Terraform changes.

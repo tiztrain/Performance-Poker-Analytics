@@ -60,11 +60,17 @@ infrastructure-as-code for hosting.
   [`src/sample-hand.js`](src/sample-hand.js) for a full example. Hands with no
   tournament line fall into an "Unknown tournament" group.
 
-### Privacy
+### Accounts and privacy
 
-Files are read locally in the page and the app makes no network requests with your
-data: there is no backend, analytics or browser storage, so results are gone when you
-reload. The only external request is for the web fonts, loaded from Google Fonts.
+Signing in is optional, and the analyzer works the same without an account. **Create
+account** and **Sign in** (top right) go to login pages run by Amazon Cognito, so this
+site never sees your password. An account currently holds only your email address:
+saving hand histories to it is the next step on the roadmap.
+
+Hand histories are read locally in the page and are never uploaded. The only
+browser storage is the login session, kept in `sessionStorage` (cleared when the tab
+closes; a login lasts at most an hour). There is no analytics. The other external
+requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
 
 ## Running it locally
 
@@ -75,6 +81,10 @@ on 24.
 npm install
 npm run dev
 ```
+
+The sign-in buttons only appear when the build knows which Cognito user pool to use.
+To try login locally, copy `.env.example` to `.env.local` and fill in the two values
+from `terraform output` in `infra/`.
 
 | Command                | What it does                            |
 | ---------------------- | --------------------------------------- |
@@ -103,8 +113,11 @@ src/
     grouping.js    group hands by tournament, sort/date by real timestamp - depends on format.js
     stats.js       the big Hero-stat aggregator (VPIP, PFR, 3-bet, c-bet, WTSD, ...) - depends on cards.js, races.js
   render/
-    format.js, chart.js, statGrid.js, table.js, dayCompare.js, results.js
+    format.js, chart.js, statGrid.js, table.js, dayCompare.js, results.js, account.js
     (DOM string-building and event binding; results.js is the stateful orchestrator)
+  auth/
+    oauth.js       OAuth + PKCE helpers: login URLs, token request, JWT decoding - pure, tested
+    session.js     redirects to Cognito, token exchange, sessionStorage
   state.js         tiny shared UI state (display mode, current rerender fn)
   main.js          entry point - wires file input, sample-data link, unit toggle, analyze button
 ```
@@ -117,9 +130,10 @@ clicking through the UI by hand after every change.
 
 ## Testing
 
-Vitest, 38 tests across the engine layer: hand evaluation edge cases (wheel straights,
+Vitest, tests across the engine layer and the auth helpers: hand evaluation edge cases (wheel straights,
 kicker comparisons), hand-history parsing, tournament format classification, position
-labeling across table sizes, and the stat aggregator. `tests/grouping.test.js` exists
+labeling across table sizes, the stat aggregator, and the login URL/PKCE/token helpers
+(including the official PKCE test vector). `tests/grouping.test.js` exists
 specifically to pin down two bugs found while using the tool on real data - see below.
 
 ## CI/CD
@@ -215,15 +229,12 @@ Both bugs shipped in the original single-file version and went unnoticed until t
 output was checked against what actually happened at the table - the regression tests
 above are there so a future refactor can't silently reintroduce either one.
 
-## Roadmap (phase 2, not yet started)
+## Roadmap (phase 2, in progress)
 
-Deliberately out of scope for this phase, to keep it shippable:
-
-- Login / accounts, so previously-uploaded hand histories persist and can be pulled
-  up again without re-uploading the file each time
-- A poker-themed visual redesign (the current UI is intentionally plain and functional)
-
-These need their own design pass (in particular: where hand-history data would be
-stored, and what a lightweight-but-real auth flow looks like for a static-hosted
-single-page app) rather than being bolted on ad hoc, so they're planned as a separate
-follow-up rather than folded into this build.
+- [x] Login and account creation, via Amazon Cognito's hosted pages with the
+      authorization code + PKCE flow (`infra/auth.tf`, `src/auth/`)
+- [ ] Save uploaded hand histories to the signed-in account, so they can be pulled up
+      again without re-uploading. Open design question: where the data lives (S3 per
+      user via a Cognito identity pool, or an API with a database), and keeping the
+      session alive past an hour with refresh tokens
+- [ ] A poker-themed visual redesign (the current UI is intentionally plain and functional)

@@ -65,3 +65,9 @@ variable "route53_zone_id" {
   type        = string
   default     = ""
 }
+
+variable "auth_dev_redirect_urls" {
+  description = "Extra URLs Cognito may redirect to after login/logout, besides the live site. The default allows the Vite dev server; set to [] to allow only the live site."
+  type        = list(string)
+  default     = ["http://localhost:5173/"]
+}

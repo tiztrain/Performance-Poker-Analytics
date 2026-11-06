@@ -27,3 +27,18 @@ output "aws_region" {
   description = "Region the S3 bucket lives in. Set this as the AWS_REGION repository secret/variable."
   value       = var.aws_region
 }
+
+output "cognito_domain" {
+  description = "Host of the Cognito hosted login pages. Set this as the COGNITO_DOMAIN repository variable (and VITE_COGNITO_DOMAIN in .env.local for local dev)."
+  value       = "${aws_cognito_user_pool_domain.users.domain}.auth.${var.aws_region}.amazoncognito.com"
+}
+
+output "cognito_client_id" {
+  description = "Cognito app client ID. Set this as the COGNITO_CLIENT_ID repository variable (and VITE_COGNITO_CLIENT_ID in .env.local for local dev)."
+  value       = aws_cognito_user_pool_client.web.id
+}
+
+output "cognito_user_pool_id" {
+  description = "Cognito user pool ID, for finding the pool in the AWS console."
+  value       = aws_cognito_user_pool.users.id
+}
