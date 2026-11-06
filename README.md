@@ -35,6 +35,12 @@ infrastructure-as-code for hosting.
 - **Benchmarks:** regular and turbo panels color-code 3-bet defense, fold to 3-bet,
   fold to c-bet and check-raise against target ranges. Hyper and satellite panels show
   a note instead, since those fixed targets don't apply there.
+- **Copy for Claude:** open any hand and click **Copy for Claude** to copy it as text for
+  a chat with an AI. It includes positions, stacks and every action in big blinds, bet
+  sizes as % of pot, the equity each of your calls needed, SPR (stack-to-pot ratio) on
+  the flop, your made hand on each street, and why the app flagged it. Opponents are
+  renamed Villain 1, 2 and so on, and shown cards come after the action so the review
+  starts from ranges. The text only goes to your clipboard; nothing is sent anywhere.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
