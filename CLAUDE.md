@@ -15,6 +15,8 @@ histories to an account is not built yet. See `README.md` for user-facing behavi
 - Run `npm test`, `npm run lint` and `npm run format:check` before every commit.
 - Work on a branch, not on `main`.
 - Push feature branches without asking. Ask before merging or pushing to `main`, since that deploys the live site.
+- When unsure which approach to take (design, scope, scoring rules, poker assumptions, trade-offs), stop and ask the owner
+  before building. Lay out the options with a recommendation and discuss; don't guess on decisions that are theirs.
 
 ## Learning
 
