@@ -47,7 +47,7 @@
         line-height: 1.5;
       }
       .wrap {
-        max-width: 1180px;
+        max-width: 1400px;
         margin: 0 auto;
         padding: 32px 20px 80px;
       }
@@ -177,17 +177,41 @@
         color: #1a1408;
       }
 
+      /* Stacked: the load panel sits on top and collapses after analysis, so results get the full width. */
       .layout {
-        display: grid;
-        grid-template-columns: 320px 1fr;
+        display: flex;
+        flex-direction: column;
         gap: 24px;
-        align-items: start;
       }
       .layout > div {
         min-width: 0;
       }
+      .load-body {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 320px;
+        gap: 24px;
+        align-items: start;
+      }
+      .load-body[hidden],
+      .load-summary[hidden] {
+        display: none;
+      }
+      .load-summary {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .load-summary-text {
+        color: var(--text-muted);
+        font-size: 13.5px;
+      }
+      .load-summary:not([hidden]) + .load-body {
+        margin-top: 16px;
+      }
       @media (max-width: 860px) {
-        .layout {
+        .load-body {
           grid-template-columns: 1fr;
         }
       }
@@ -670,33 +694,43 @@
       </header>
 
       <div class="layout">
-        <div>
-          <div class="panel">
-            <h2>Load hand history</h2>
-            <div class="upload-row">
-              <label class="file-btn" for="hh-file">📄 Upload export file(s)</label>
-              <input type="file" id="hh-file" accept=".txt,.log,text/plain" multiple style="display: none" />
+        <div class="panel load-panel" id="load-panel">
+          <div class="load-summary" id="load-summary" hidden>
+            <span class="load-summary-text" id="load-summary-text"></span>
+            <button class="account-btn" id="load-toggle" type="button" aria-controls="load-body">
+              Load different hands
+            </button>
+          </div>
+          <div class="load-body" id="load-body">
+            <div>
+              <h2>Load hand history</h2>
+              <div class="upload-row">
+                <label class="file-btn" for="hh-file">📄 Upload export file(s)</label>
+                <input type="file" id="hh-file" accept=".txt,.log,text/plain" multiple style="display: none" />
+              </div>
+              <div class="file-hint">
+                Best on mobile — pick the file(s) straight from Files/Downloads on your phone, no pasting needed.
+                Multiple files and drag-and-drop (desktop) both work; everything is read locally in the page, nothing is
+                uploaded anywhere.
+              </div>
+              <div class="or-divider">or paste</div>
+              <textarea id="hh-input" placeholder="Paste one or more CoinPoker hand histories here..."></textarea>
+              <button class="primary" id="analyze-btn">Analyze hands</button>
+              <span class="sample-link" id="load-sample">Load the 4-hand sample instead</span>
             </div>
-            <div class="file-hint">
-              Best on mobile — pick the file(s) straight from Files/Downloads on your phone, no pasting needed. Multiple
-              files and drag-and-drop (desktop) both work; everything is read locally in the page, nothing is uploaded
-              anywhere.
-            </div>
-            <div class="or-divider">or paste</div>
-            <textarea id="hh-input" placeholder="Paste one or more CoinPoker hand histories here..."></textarea>
-            <button class="primary" id="analyze-btn">Analyze hands</button>
-            <span class="sample-link" id="load-sample">Load the 4-hand sample instead</span>
-            <div class="caveat">
-              <b>Scope, honestly:</b> this computes exact frequency stats and exact pot-odds math from the parsed
-              actions — that part is precise. It does <b>not</b> run solver equity calculations, so hand-strength flags
-              are pattern-based coaching judgment, not GTO-verified EV loss. Multiway postflop spots are tracked less
-              precisely for cbet/check-raise stats, same limitation real solvers apply to their own analyzers.
-            </div>
-            <div class="suit-legend">
-              <span><span class="sw" style="color: var(--suit-h)">♥</span>Hearts</span>
-              <span><span class="sw" style="color: var(--suit-d)">♦</span>Diamonds</span>
-              <span><span class="sw" style="color: var(--suit-c)">♣</span>Clubs</span>
-              <span><span class="sw" style="color: var(--suit-s)">♠</span>Spades</span>
+            <div>
+              <div class="caveat">
+                <b>Scope, honestly:</b> this computes exact frequency stats and exact pot-odds math from the parsed
+                actions — that part is precise. It does <b>not</b> run solver equity calculations, so hand-strength
+                flags are pattern-based coaching judgment, not GTO-verified EV loss. Multiway postflop spots are tracked
+                less precisely for cbet/check-raise stats, same limitation real solvers apply to their own analyzers.
+              </div>
+              <div class="suit-legend">
+                <span><span class="sw" style="color: var(--suit-h)">♥</span>Hearts</span>
+                <span><span class="sw" style="color: var(--suit-d)">♦</span>Diamonds</span>
+                <span><span class="sw" style="color: var(--suit-c)">♣</span>Clubs</span>
+                <span><span class="sw" style="color: var(--suit-s)">♠</span>Spades</span>
+              </div>
             </div>
           </div>
         </div>

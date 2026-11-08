@@ -20,6 +20,8 @@ infrastructure-as-code for hosting.
 1. Load hands: upload one or more `.txt`/`.log` exports, drag files onto the text box,
    or paste text and click **Analyze hands**. **Load the 4-hand sample** fills the box
    with example hands if you just want to see the output (click **Analyze hands** after).
+   Once the hands are analyzed, the load panel shrinks to a one-line summary so the
+   results get the full width; **Load different hands** opens it again.
 2. Pick what to look at. Tournaments are listed by format, and selecting several
    combines them. If the hands span more than one day, you also get date filters and a
    **Day comparison** view.
