@@ -60,7 +60,8 @@ Data flows one way:
 
 - **`src/engine/`** is pure logic with no DOM access. Tests run in Vitest's
   `node` environment and cover this layer plus `src/auth/oauth.js`, so anything that needs testing belongs in a pure
-  module.
+  module. Where logic needs browser storage (the quiz store in `engine/quiz.js`), the storage object is passed in, so
+  tests can use a stand-in.
 - **`src/render/`** builds HTML strings, assigns them to `innerHTML`, then binds events. `results.js` is the orchestrator:
   date, tournament and view selection all live in closures inside `renderResults`, and its `rerender()` redraws from
   them. New view state goes there.

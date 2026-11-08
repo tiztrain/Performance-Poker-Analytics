@@ -3,6 +3,7 @@ import { FORMAT_ORDER, FORMAT_LABELS } from '../engine/format.js';
 import { setCurrentRerender } from '../state.js';
 import { renderStatsAndTable, renderCombined } from './table.js';
 import { dayFormatFilterHtml, dayDateFilterHtml, dayComparisonHtml } from './dayCompare.js';
+import { createQuizController } from './quiz.js';
 
 export function renderResults(allHands) {
   const container = document.getElementById('results');
@@ -11,6 +12,8 @@ export function renderResults(allHands) {
     g.startDate = groupStartDate(g);
   });
   const allDates = distinctGroupDates(allGroups);
+  // Created once per load, so redraws (e.g. the BB/chips toggle) keep your place in the quiz.
+  const quiz = createQuizController(allHands);
 
   // Tournament selection persists by the group's unique key (name+tournamentId, not
   // name alone - recurring tournaments reuse the same display name every occurrence)
@@ -19,6 +22,7 @@ export function renderResults(allHands) {
   let selectedTourneys = new Set(allGroups.length ? [allGroups[0].key] : []);
   // 'filter': the usual date + tournament selector driving the stats/table below.
   // 'daycompare': a single standalone table comparing every date, independent of selection.
+  // 'quiz': the hand-reading quiz over every loaded showdown hand.
   let activeView = 'filter';
   // Which formats count toward the day-by-day comparison (independent of the tournament
   // selection in the "Filter by date" view) - defaults to everything.
@@ -30,15 +34,20 @@ export function renderResults(allHands) {
   let selectedDayDates = new Set(allDates);
 
   function viewToggleHtml() {
-    if (allDates.length <= 1) return '';
+    const tab = (view, label) =>
+      '<button class="filter-btn view-tab' +
+      (activeView === view ? ' active' : '') +
+      '" data-view="' +
+      view +
+      '">' +
+      label +
+      '</button>';
+    const multiDay = allDates.length > 1;
     return (
       '<div class="panel"><div class="filter-row">' +
-      '<button class="filter-btn view-tab' +
-      (activeView === 'filter' ? ' active' : '') +
-      '" data-view="filter">Filter by date</button>' +
-      '<button class="filter-btn view-tab' +
-      (activeView === 'daycompare' ? ' active' : '') +
-      '" data-view="daycompare">Day comparison</button>' +
+      tab('filter', multiDay ? 'Filter by date' : 'Stats and hands') +
+      (multiDay ? tab('daycompare', 'Day comparison') : '') +
+      tab('quiz', 'Hand-reading quiz (' + quiz.itemCount + ')') +
       '</div></div>'
     );
   }
@@ -141,6 +150,12 @@ export function renderResults(allHands) {
   }
 
   function rerender() {
+    if (activeView === 'quiz') {
+      container.innerHTML = viewToggleHtml() + '<div id="quiz-mount"></div>';
+      quiz.render(document.getElementById('quiz-mount'));
+      bindBars();
+      return;
+    }
     if (activeView === 'daycompare') {
       const bodyHtml =
         viewToggleHtml() +

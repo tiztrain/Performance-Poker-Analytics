@@ -76,7 +76,7 @@ function playersSeeingFlop(hand) {
   return hand.seats.map(s => s.name).filter(n => !folded.has(n));
 }
 
-function actionLine(a, hand, names, positions) {
+export function describeAction(a, hand, names, positions) {
   const bb = chips => round1(chips / hand.bb) + 'bb';
   const who = names.get(a.player) + (positions.has(a.player) ? ' (' + positions.get(a.player) + ')' : '');
   const allin = a.allin ? ' (all-in)' : '';
@@ -161,7 +161,7 @@ export function handToClaudeText(hand, flagReasons = []) {
     out.push(header + '.');
 
     acts.forEach(a => {
-      const line = actionLine(a, hand, names, positions);
+      const line = describeAction(a, hand, names, positions);
       if (line) out.push('- ' + line);
     });
   });

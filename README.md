@@ -41,6 +41,12 @@ infrastructure-as-code for hosting.
   the flop, your made hand on each street, and why the app flagged it. Opponents are
   renamed Villain 1, 2 and so on, and shown cards come after the action so the review
   starts from ranges. The text only goes to your clipboard; nothing is sent anywhere.
+- **Hand-reading quiz:** the **Hand-reading quiz** tab replays every loaded hand where an
+  opponent showed cards, one street at a time, with their cards hidden. On each street
+  you tick the categories they could hold: five starting-hand groups preflop; strong,
+  top pair, weaker pair, draw or nothing after the flop. You score 100 for the right
+  category alone, less the more you tick, and 0 for a miss. Averages by street and your
+  last 20 answers against the 20 before are saved in this browser.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
@@ -73,9 +79,10 @@ account** and **Sign in** (top right) go to login pages run by Amazon Cognito, s
 site never sees your password. An account currently holds only your email address:
 saving hand histories to it is the next step on the roadmap.
 
-Hand histories are read locally in the page and are never uploaded. The only
-browser storage is the login session, kept in `sessionStorage` (cleared when the tab
-closes; a login lasts at most an hour). There is no analytics. The other external
+Hand histories are read locally in the page and are never uploaded. Browser storage
+holds only the login session, kept in `sessionStorage` (cleared when the tab closes; a
+login lasts at most an hour), and your hand-reading quiz answers, kept in
+`localStorage` on this device until you press **Reset scores**. There is no analytics. The other external
 requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
 
 ## Running it locally
