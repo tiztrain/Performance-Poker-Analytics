@@ -434,6 +434,24 @@
       table.hand-table td.mono-num {
         font-family: var(--mono);
       }
+      /* Wraps the hands table so on a narrow phone only the table scrolls sideways, not the page.
+         The table's top margin moves here: overflow stops a child's margin merging with the
+         element above, which would otherwise add 8px of space on desktop. */
+      .table-scroll {
+        overflow-x: auto;
+        margin-top: 8px;
+      }
+      .table-scroll > table.hand-table {
+        margin-top: 0;
+      }
+      /* Phones: tighter cell padding so the table usually fits without needing to scroll at all. */
+      @media (max-width: 640px) {
+        table.hand-table th,
+        table.hand-table td {
+          padding-left: 6px;
+          padding-right: 6px;
+        }
+      }
       .mono {
         font-family: var(--mono);
       }
