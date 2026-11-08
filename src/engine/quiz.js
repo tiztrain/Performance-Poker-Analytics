@@ -5,7 +5,7 @@
 
 import { categoriesForStreet, categoryOnStreet, POSTFLOP_CATEGORIES, PREFLOP_CATEGORIES } from './handCategories.js';
 import { handSortKey } from './grouping.js';
-import { anonymizePlayers, describeAction } from './handSummary.js';
+import { anonymizePlayers, describeAction, handToClaudeText } from './handSummary.js';
 import { computeHandPositions } from './positions.js';
 
 const STREETS = ['preflop', 'flop', 'turn', 'river'];
@@ -73,19 +73,32 @@ export function summarizeAnswers(records, recentSize = 20) {
   };
 }
 
-// Records belong to a mode: 'simple' (categories, scored every street) or 'advanced' (range
-// painted on the 13×13 grid, scored on the river only). Records saved before modes existed are
-// simple ones.
+// Quiz settings are two independent choices, and scores are kept separately for each of the
+// four combinations:
+// - answer type: 'simple' (pick categories) or 'advanced' (paint the range on the 13×13 grid)
+// - timing: 'every' (asked on every street) or 'river' (asked on the river only)
+// Records saved by earlier versions: no mode or 'simple' meant simple on every street, and
+// 'advanced' meant the grid on the river only.
+export function modeKey(answerType, timing) {
+  return answerType + '-' + timing;
+}
+
+export function normalizeMode(mode) {
+  if (!mode || mode === 'simple') return 'simple-every';
+  if (mode === 'advanced') return 'advanced-river';
+  return mode;
+}
+
 export function recordsForMode(records, mode) {
-  return records.filter(r => (r.mode || 'simple') === mode);
+  return records.filter(r => normalizeMode(r.mode) === mode);
 }
 
 const LABELS = Object.fromEntries([...PREFLOP_CATEGORIES, ...POSTFLOP_CATEGORIES].map(c => [c.id, c.label]));
 
-// Explanation shown after an advanced read: what villain did and held on each street, how the
-// player read it, and a lesson picked from the pattern of their categories. `reads` maps street
-// to the categories the player ticked (empty or missing if they skipped that street).
-export function explainRead(item, reads, rangeResult) {
+// Explanation shown when a hand is finished: what villain did and held on each street, and a
+// lesson picked from the pattern of their categories. `rangeResult` (from scoreRange) adds a line
+// about the painted range in advanced mode; pass null in simple mode.
+export function explainRead(item, rangeResult = null) {
   const hand = item.hand;
   const names = anonymizePlayers(hand);
   const positions = computeHandPositions(hand);
@@ -95,13 +108,10 @@ export function explainRead(item, reads, rangeResult) {
       .filter(a => a.player === item.villain)
       .map(a => describeAction(a, hand, names, positions))
       .filter(Boolean);
-    const picked = reads[st.street] || [];
     return {
       street: st.street,
       actions: acts.length ? acts : [villain + ' did not act'],
       actual: LABELS[st.actual],
-      read: picked.length ? picked.map(id => LABELS[id]).join(', ') : null,
-      readRight: picked.length ? picked.includes(st.actual) : null,
     };
   });
 
@@ -137,18 +147,40 @@ export function explainRead(item, reads, rangeResult) {
       'middle pairs when villain plays passively.';
   }
 
-  const pct = Math.round(rangeResult.share * 1000) / 10;
-  const rangeLine = rangeResult.hit
-    ? `Their hand (${rangeResult.villainCell}) was in your range, which covered ${pct}% of the possible hands.`
-    : `Their hand (${rangeResult.villainCell}) was not in your range, which covered ${pct}% of the possible hands.`;
+  let rangeLine = null;
+  if (rangeResult) {
+    const pct = Math.round(rangeResult.share * 1000) / 10;
+    rangeLine =
+      `Their hand (${rangeResult.villainCell}) was ${rangeResult.hit ? '' : 'not '}in your range, ` +
+      `which covered ${pct}% of the possible hands.`;
+  }
   return { recap, rangeLine, lesson };
+}
+
+// Text for the quiz's Copy for Claude button: the whole hand (as in the hand table's button),
+// plus what the player read on one street and what villain really had, with a request aimed
+// at the read.
+export function quizToClaudeText(item, street, readText, resultText) {
+  const villain = anonymizePlayers(item.hand).get(item.villain);
+  const st = item.streets.find(s => s.street === street);
+  return handToClaudeText(item.hand, [], {
+    context: [
+      `I was practising hand reading on this hand, with ${villain}'s cards hidden until the end.`,
+      `My read on the ${street}: ${readText}`,
+      `What ${villain} really had on the ${street}: ${LABELS[st.actual]} (${item.villainCards.join(' ')}).`,
+      resultText,
+    ],
+    instruction:
+      `Explain what in ${villain}'s actions and the board pointed to their real holding on the ${street}, ` +
+      'what my read got right or missed, and how to read this kind of spot better next time.',
+  });
 }
 
 // Saved answers. `storage` is anything with getItem/setItem (the browser's localStorage, or a
 // stand-in in tests). If storage is missing or refuses (private browsing, full), answers are
 // kept in memory for this visit only.
 const STORE_KEY = 'handReadingQuiz.v1';
-const MODE_KEY = 'handReadingQuiz.mode';
+const SETTING_PREFIX = 'handReadingQuiz.';
 
 export function createQuizStore(storage) {
   let memory = [];
@@ -170,7 +202,7 @@ export function createQuizStore(storage) {
       // keep the in-memory copy
     }
   }
-  let memoryMode = 'simple';
+  const memorySettings = {};
   return {
     all: load,
     add(record) {
@@ -179,18 +211,18 @@ export function createQuizStore(storage) {
     clear() {
       save([]);
     },
-    // Which mode the quiz was last used in, so the checkbox is remembered.
-    getMode() {
+    // Remembered choices such as the answer type and timing, so the checkboxes stay as left.
+    getSetting(name, fallback) {
       try {
-        return (storage && storage.getItem(MODE_KEY)) || memoryMode;
+        return (storage && storage.getItem(SETTING_PREFIX + name)) || memorySettings[name] || fallback;
       } catch {
-        return memoryMode;
+        return memorySettings[name] || fallback;
       }
     },
-    setMode(mode) {
-      memoryMode = mode;
+    setSetting(name, value) {
+      memorySettings[name] = value;
       try {
-        if (storage) storage.setItem(MODE_KEY, mode);
+        if (storage) storage.setItem(SETTING_PREFIX + name, value);
       } catch {
         // keep the in-memory copy
       }

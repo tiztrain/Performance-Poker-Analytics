@@ -11,6 +11,9 @@ import {
   buildQuizItems,
   createQuizStore,
   explainRead,
+  modeKey,
+  normalizeMode,
+  quizToClaudeText,
   recordsForMode,
   scoreAnswer,
   summarizeAnswers,
@@ -126,21 +129,33 @@ describe('summarizeAnswers', () => {
   });
 });
 
-describe('recordsForMode', () => {
-  it('treats records without a mode as simple', () => {
-    const records = [{ points: 1 }, { mode: 'simple', points: 2 }, { mode: 'advanced', points: 3 }];
-    expect(recordsForMode(records, 'simple').map(r => r.points)).toEqual([1, 2]);
-    expect(recordsForMode(records, 'advanced').map(r => r.points)).toEqual([3]);
+describe('quiz modes', () => {
+  it('names the four setting combinations', () => {
+    expect(modeKey('advanced', 'every')).toBe('advanced-every');
+  });
+
+  it('maps records from earlier versions onto the new modes', () => {
+    expect(normalizeMode(undefined)).toBe('simple-every');
+    expect(normalizeMode('simple')).toBe('simple-every');
+    expect(normalizeMode('advanced')).toBe('advanced-river');
+    expect(normalizeMode('simple-river')).toBe('simple-river');
+  });
+
+  it('keeps scores separate per mode', () => {
+    const records = [{ points: 1 }, { mode: 'simple-every', points: 2 }, { mode: 'advanced', points: 3 }];
+    expect(recordsForMode(records, 'simple-every').map(r => r.points)).toEqual([1, 2]);
+    expect(recordsForMode(records, 'advanced-river').map(r => r.points)).toEqual([3]);
+    expect(recordsForMode(records, 'simple-river')).toEqual([]);
   });
 });
 
 describe('createQuizStore', () => {
-  it('remembers the quiz mode', () => {
+  it('remembers settings', () => {
     const data = {};
     const storage = { getItem: k => data[k] ?? null, setItem: (k, v) => (data[k] = v) };
-    expect(createQuizStore(storage).getMode()).toBe('simple');
-    createQuizStore(storage).setMode('advanced');
-    expect(createQuizStore(storage).getMode()).toBe('advanced');
+    expect(createQuizStore(storage).getSetting('timing', 'every')).toBe('every');
+    createQuizStore(storage).setSetting('timing', 'river');
+    expect(createQuizStore(storage).getSetting('timing', 'every')).toBe('river');
   });
 
   it('saves and reloads answers through storage', () => {
@@ -217,23 +232,36 @@ Board [ Kh 9h 2c 5d Jh ]`;
     expect(items[0].streets[3].options).not.toContain('draw');
   });
 
-  it('explains a missed advanced read street by street', () => {
+  it('explains a finished hand street by street', () => {
     const item = buildQuizItems([parseHand(SHOWDOWN)])[0];
     const dead = ['Kh', '9h', '2c', '5d', 'Jh', 'Ac', 'Jd'];
-    const ex = explainRead(
-      item,
-      { flop: ['draw'], turn: ['topPair'] },
-      scoreRange(new Set(['AA']), item.villainCards, dead),
-    );
-    expect(ex.recap.map(r => [r.street, r.actual, r.read, r.readRight])).toEqual([
-      ['preflop', 'Everything else', null, null],
-      ['flop', 'Draw', 'Draw', true],
-      ['turn', 'Draw', 'Top pair or overpair', false],
-      ['river', 'Strong', null, null],
+    const ex = explainRead(item, scoreRange(new Set(['AA']), item.villainCards, dead));
+    expect(ex.recap.map(r => [r.street, r.actual])).toEqual([
+      ['preflop', 'Everything else'],
+      ['flop', 'Draw'],
+      ['turn', 'Draw'],
+      ['river', 'Strong'],
     ]);
     expect(ex.recap[1].actions).toEqual(['Villain 2 (BTN) bets 3bb (47% of pot)']);
     expect(ex.rangeLine).toBe('Their hand (A4s) was not in your range, which covered 0.3% of the possible hands.');
     expect(ex.lesson).toMatch(/drawing on an earlier street and got there/);
+    expect(explainRead(item).rangeLine).toBeNull();
+  });
+
+  it('builds Copy for Claude text about a read', () => {
+    const item = buildQuizItems([parseHand(SHOWDOWN)])[0];
+    const text = quizToClaudeText(item, 'flop', 'Top pair or overpair', 'I scored 0 out of 100.');
+    const lines = text.split('\n');
+    expect(lines.slice(-7)).toEqual([
+      '',
+      "I was practising hand reading on this hand, with Villain 2's cards hidden until the end.",
+      'My read on the flop: Top pair or overpair',
+      'What Villain 2 really had on the flop: Draw (Ah 4h).',
+      'I scored 0 out of 100.',
+      '',
+      "Explain what in Villain 2's actions and the board pointed to their real holding on the flop, what my read got right or missed, and how to read this kind of spot better next time.",
+    ]);
+    expect(text).not.toContain('c0ffee01');
   });
 
   it('skips hands where no opponent showed cards', () => {

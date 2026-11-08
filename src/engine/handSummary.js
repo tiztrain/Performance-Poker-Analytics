@@ -103,7 +103,10 @@ export function describeAction(a, hand, names, positions) {
 }
 
 // `flagReasons` is a list of plain-text reasons the app flagged this hand (see flagReasonsForHand).
-export function handToClaudeText(hand, flagReasons = []) {
+// `options.context` adds lines just before the closing request, and `options.instruction`
+// replaces that request (the quiz uses both to ask about a specific read).
+export function handToClaudeText(hand, flagReasons = [], options = {}) {
+  const { context = [], instruction = REVIEW_INSTRUCTION } = options;
   const names = anonymizePlayers(hand);
   const positions = computeHandPositions(hand);
   const bb = chips => round1(chips / hand.bb) + 'bb';
@@ -200,8 +203,12 @@ export function handToClaudeText(hand, flagReasons = []) {
     flagReasons.forEach(r => out.push('- ' + r));
   }
 
+  if (context.length) {
+    out.push('');
+    context.forEach(line => out.push(line));
+  }
   out.push('');
-  out.push(REVIEW_INSTRUCTION);
+  out.push(instruction);
   return out.join('\n');
 }
 

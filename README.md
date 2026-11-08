@@ -42,19 +42,24 @@ infrastructure-as-code for hosting.
   renamed Villain 1, 2 and so on, and shown cards come after the action so the review
   starts from ranges. The text only goes to your clipboard; nothing is sent anywhere.
 - **Hand-reading quiz:** the **Hand-reading quiz** tab replays every loaded hand where an
-  opponent showed cards, one street at a time, with their cards hidden. Two modes, with an
-  **Advanced mode** checkbox that is remembered:
-  - **Simple:** on every street, tick the categories they could hold (five starting-hand
-    groups preflop; strong, top pair, weaker pair, draw or nothing after the flop). You
-    score 100 for the right category alone, less the more you tick, and 0 for a miss.
-    After a miss you have to find the right category before moving on.
-  - **Advanced:** note your read on each street (not scored), then paint their whole
-    range on the 13×13 starting-hand grid on the river. If their hand is in your range
-    you score 100 × (1 − √share painted): about 83 for 3% of hands, 68 for 10%, 50 for
-    25%. A miss scores 0 and comes with a street-by-street recap and an explanation.
+  opponent showed cards, with their cards hidden. Two checkboxes, both remembered, set how
+  it works:
+  - **Advanced: paint the range** switches from ticking categories (five starting-hand
+    groups preflop; strong, top pair, weaker pair, draw or nothing after the flop) to
+    painting their range on the 13×13 starting-hand grid. Categories score 100 for the
+    right one alone, less the more you tick, and 0 for a miss; after a miss you must find
+    the right category before moving on. The grid scores 100 × (1 − √share painted) if
+    their hand is in your range (about 83 for 3% of hands, 68 for 10%, 50 for 25%) and 0
+    if not.
+  - **River only** asks once on the river, with the earlier streets as a replay. Otherwise
+    it asks on every street; with the grid, each street says only whether their hand was
+    in your range and your range carries over, and where their hand was is shown after the
+    river.
 
-  Scores are saved in this browser, separately for each mode, with averages and your
-  last 20 answers against the 20 before.
+  Every answer has a **Copy for Claude** button that copies the hand, your read and their
+  real hand to go over in a chat. A finished hand shows a street-by-street recap, plus a
+  lesson if you missed. Scores are saved in this browser, separately for each combination
+  of settings.
 
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:

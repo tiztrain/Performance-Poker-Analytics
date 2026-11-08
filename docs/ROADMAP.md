@@ -72,10 +72,13 @@ Uses showdown hands, where the opponent's cards are known, as an answer key.
   or overpair, weaker pair, draw (flush draw or open-ended straight draw only), nothing. A made hand beats a draw.
 - **Score (done):** 100 for the right category alone, less for each extra pick, 0 for a miss. Saved in `localStorage`
   with averages by street and the last 20 answers against the 20 before.
-- **Advanced mode (done):** a remembered checkbox. You note category reads on each street (not scored), then paint
-  villain's range on the 13×13 grid on the river. Scored 100 × (1 − √share of live combos painted) if their hand is in
-  the range, otherwise 0, with a street-by-street recap and an explanation chosen from how their hand developed.
-  Simple mode now makes you find the right category after a miss before moving on.
+- **Settings (done):** two remembered checkboxes. **Advanced: paint the range** switches from categories to the
+  13×13 grid, scored 100 × (1 − √share of live combos painted) if villain's hand is in the range, otherwise 0. **River
+  only** asks once on the river (earlier streets are a replay) instead of every street. In advanced every-street mode,
+  each street reports only in-range or not, the range carries over, and the hand is revealed after the river. In simple
+  mode, a miss means finding the right category before moving on. Scores are kept per combination.
+- **Copy for Claude on every answer (done):** the hand, the player's read and villain's real holding, with a request
+  to explain the read. The in-app AI discussion (5.14) is the owner's goal for this.
 - **Next:** scores by type of line (for example, "check-raise on the flop").
 - **Review:** "what villains showed down with each line" across your own hands. This is a population summary (tendencies
   across all opponents), so it sits under the same feature flag as 5.10.
@@ -146,6 +149,8 @@ big blind), and % of stack lost, because a 5bb mistake at 15bb deep hurts far mo
 all-in EV, flag costs), with a breakdown, the best and costliest decisions, and a trend against your own average.
 
 ### 5.14 In-app AI discussion
+
+The owner wants this inside the app eventually, starting from the quiz's and hand table's Copy for Claude text.
 
 Chat about a hand, preloaded with the 5.1 context plus your notes and stats. Needs a serverless backend holding the API
 key, login, rate limits and a monthly spend cap.
