@@ -7,7 +7,15 @@ import {
   preflopCategory,
 } from '../src/engine/handCategories.js';
 import { parseCard } from '../src/engine/cards.js';
-import { buildQuizItems, createQuizStore, scoreAnswer, summarizeAnswers } from '../src/engine/quiz.js';
+import {
+  buildQuizItems,
+  createQuizStore,
+  explainRead,
+  recordsForMode,
+  scoreAnswer,
+  summarizeAnswers,
+} from '../src/engine/quiz.js';
+import { scoreRange } from '../src/engine/rangeGrid.js';
 import { parseHand } from '../src/engine/parser.js';
 
 const cards = s => s.split(' ');
@@ -118,7 +126,23 @@ describe('summarizeAnswers', () => {
   });
 });
 
+describe('recordsForMode', () => {
+  it('treats records without a mode as simple', () => {
+    const records = [{ points: 1 }, { mode: 'simple', points: 2 }, { mode: 'advanced', points: 3 }];
+    expect(recordsForMode(records, 'simple').map(r => r.points)).toEqual([1, 2]);
+    expect(recordsForMode(records, 'advanced').map(r => r.points)).toEqual([3]);
+  });
+});
+
 describe('createQuizStore', () => {
+  it('remembers the quiz mode', () => {
+    const data = {};
+    const storage = { getItem: k => data[k] ?? null, setItem: (k, v) => (data[k] = v) };
+    expect(createQuizStore(storage).getMode()).toBe('simple');
+    createQuizStore(storage).setMode('advanced');
+    expect(createQuizStore(storage).getMode()).toBe('advanced');
+  });
+
   it('saves and reloads answers through storage', () => {
     const data = {};
     const storage = { getItem: k => data[k] ?? null, setItem: (k, v) => (data[k] = v) };
@@ -191,6 +215,25 @@ Board [ Kh 9h 2c 5d Jh ]`;
       ['river', 'strong'],
     ]);
     expect(items[0].streets[3].options).not.toContain('draw');
+  });
+
+  it('explains a missed advanced read street by street', () => {
+    const item = buildQuizItems([parseHand(SHOWDOWN)])[0];
+    const dead = ['Kh', '9h', '2c', '5d', 'Jh', 'Ac', 'Jd'];
+    const ex = explainRead(
+      item,
+      { flop: ['draw'], turn: ['topPair'] },
+      scoreRange(new Set(['AA']), item.villainCards, dead),
+    );
+    expect(ex.recap.map(r => [r.street, r.actual, r.read, r.readRight])).toEqual([
+      ['preflop', 'Everything else', null, null],
+      ['flop', 'Draw', 'Draw', true],
+      ['turn', 'Draw', 'Top pair or overpair', false],
+      ['river', 'Strong', null, null],
+    ]);
+    expect(ex.recap[1].actions).toEqual(['Villain 2 (BTN) bets 3bb (47% of pot)']);
+    expect(ex.rangeLine).toBe('Their hand (A4s) was not in your range, which covered 0.3% of the possible hands.');
+    expect(ex.lesson).toMatch(/drawing on an earlier street and got there/);
   });
 
   it('skips hands where no opponent showed cards', () => {

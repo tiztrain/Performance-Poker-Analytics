@@ -42,11 +42,20 @@ infrastructure-as-code for hosting.
   renamed Villain 1, 2 and so on, and shown cards come after the action so the review
   starts from ranges. The text only goes to your clipboard; nothing is sent anywhere.
 - **Hand-reading quiz:** the **Hand-reading quiz** tab replays every loaded hand where an
-  opponent showed cards, one street at a time, with their cards hidden. On each street
-  you tick the categories they could hold: five starting-hand groups preflop; strong,
-  top pair, weaker pair, draw or nothing after the flop. You score 100 for the right
-  category alone, less the more you tick, and 0 for a miss. Averages by street and your
-  last 20 answers against the 20 before are saved in this browser.
+  opponent showed cards, one street at a time, with their cards hidden. Two modes, with an
+  **Advanced mode** checkbox that is remembered:
+  - **Simple:** on every street, tick the categories they could hold (five starting-hand
+    groups preflop; strong, top pair, weaker pair, draw or nothing after the flop). You
+    score 100 for the right category alone, less the more you tick, and 0 for a miss.
+    After a miss you have to find the right category before moving on.
+  - **Advanced:** note your read on each street (not scored), then paint their whole
+    range on the 13×13 starting-hand grid on the river. If their hand is in your range
+    you score 100 × (1 − √share painted): about 83 for 3% of hands, 68 for 10%, 50 for
+    25%. A miss scores 0 and comes with a street-by-street recap and an explanation.
+
+  Scores are saved in this browser, separately for each mode, with averages and your
+  last 20 answers against the 20 before.
+
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 

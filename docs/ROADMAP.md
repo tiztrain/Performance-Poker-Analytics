@@ -72,8 +72,11 @@ Uses showdown hands, where the opponent's cards are known, as an answer key.
   or overpair, weaker pair, draw (flush draw or open-ended straight draw only), nothing. A made hand beats a draw.
 - **Score (done):** 100 for the right category alone, less for each extra pick, 0 for a miss. Saved in `localStorage`
   with averages by street and the last 20 answers against the 20 before.
-- **Next:** an Advanced mode with a switch, where you paint villain's range on the 13×13 starting-hand grid instead of
-  picking categories. Scores by type of line (for example, "check-raise on the flop").
+- **Advanced mode (done):** a remembered checkbox. You note category reads on each street (not scored), then paint
+  villain's range on the 13×13 grid on the river. Scored 100 × (1 − √share of live combos painted) if their hand is in
+  the range, otherwise 0, with a street-by-street recap and an explanation chosen from how their hand developed.
+  Simple mode now makes you find the right category after a miss before moving on.
+- **Next:** scores by type of line (for example, "check-raise on the flop").
 - **Review:** "what villains showed down with each line" across your own hands. This is a population summary (tendencies
   across all opponents), so it sits under the same feature flag as 5.10.
 - Later: the quiz feeds the drill mode (5.8).

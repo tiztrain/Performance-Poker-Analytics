@@ -3,8 +3,10 @@
 // street at a time with those cards hidden, and the player picks which categories villain could
 // hold. See docs/ROADMAP.md 5.4.
 
-import { categoriesForStreet, categoryOnStreet } from './handCategories.js';
+import { categoriesForStreet, categoryOnStreet, POSTFLOP_CATEGORIES, PREFLOP_CATEGORIES } from './handCategories.js';
 import { handSortKey } from './grouping.js';
+import { anonymizePlayers, describeAction } from './handSummary.js';
+import { computeHandPositions } from './positions.js';
 
 const STREETS = ['preflop', 'flop', 'turn', 'river'];
 
@@ -71,10 +73,82 @@ export function summarizeAnswers(records, recentSize = 20) {
   };
 }
 
+// Records belong to a mode: 'simple' (categories, scored every street) or 'advanced' (range
+// painted on the 13×13 grid, scored on the river only). Records saved before modes existed are
+// simple ones.
+export function recordsForMode(records, mode) {
+  return records.filter(r => (r.mode || 'simple') === mode);
+}
+
+const LABELS = Object.fromEntries([...PREFLOP_CATEGORIES, ...POSTFLOP_CATEGORIES].map(c => [c.id, c.label]));
+
+// Explanation shown after an advanced read: what villain did and held on each street, how the
+// player read it, and a lesson picked from the pattern of their categories. `reads` maps street
+// to the categories the player ticked (empty or missing if they skipped that street).
+export function explainRead(item, reads, rangeResult) {
+  const hand = item.hand;
+  const names = anonymizePlayers(hand);
+  const positions = computeHandPositions(hand);
+  const villain = names.get(item.villain);
+  const recap = item.streets.map(st => {
+    const acts = hand.streets[st.street]
+      .filter(a => a.player === item.villain)
+      .map(a => describeAction(a, hand, names, positions))
+      .filter(Boolean);
+    const picked = reads[st.street] || [];
+    return {
+      street: st.street,
+      actions: acts.length ? acts : [villain + ' did not act'],
+      actual: LABELS[st.actual],
+      read: picked.length ? picked.map(id => LABELS[id]).join(', ') : null,
+      readRight: picked.length ? picked.includes(st.actual) : null,
+    };
+  });
+
+  const path = item.streets.map(st => st.actual);
+  const river = path[path.length - 1];
+  const villainBetRiver = hand.streets.river.some(
+    a => a.player === item.villain && (a.action === 'bet' || a.action === 'raise'),
+  );
+  const strongSinceFlop = path.slice(1).every(c => c === 'strong');
+  let lesson;
+  if (river === 'strong' && path.includes('draw')) {
+    lesson =
+      'They were drawing on an earlier street and got there on the river. When the river completes a flush or ' +
+      'straight, keep the draws that called earlier streets in their range, not only hands that were already strong.';
+  } else if (river === 'strong' && strongSinceFlop) {
+    lesson =
+      'They had a strong hand from the flop on. Strong hands don’t always raise: when villain just checks and calls, ' +
+      'still include sets, two pair and better that are slow-playing.';
+  } else if (river === 'strong') {
+    lesson =
+      'They improved to a strong hand on a later street. Think about which hands in their earlier range the turn or ' +
+      'river card helps, such as two pair or trips made by a pair on the board.';
+  } else if (river === 'nothing') {
+    lesson = villainBetRiver
+      ? 'They bet the river with nothing: a bluff' +
+        (path.includes('draw') ? ', with a draw that missed' : '') +
+        '. When the obvious draws miss, a river bet can be a missed draw, so include some air in their betting range.'
+      : 'They reached showdown with nothing. Players often check down missed draws and high cards, so when villain ' +
+        'plays passively their range can be weaker than it looks.';
+  } else {
+    lesson =
+      'They had a one-pair hand. Medium-strength hands mostly check and call rather than bet big, so include top and ' +
+      'middle pairs when villain plays passively.';
+  }
+
+  const pct = Math.round(rangeResult.share * 1000) / 10;
+  const rangeLine = rangeResult.hit
+    ? `Their hand (${rangeResult.villainCell}) was in your range, which covered ${pct}% of the possible hands.`
+    : `Their hand (${rangeResult.villainCell}) was not in your range, which covered ${pct}% of the possible hands.`;
+  return { recap, rangeLine, lesson };
+}
+
 // Saved answers. `storage` is anything with getItem/setItem (the browser's localStorage, or a
 // stand-in in tests). If storage is missing or refuses (private browsing, full), answers are
 // kept in memory for this visit only.
 const STORE_KEY = 'handReadingQuiz.v1';
+const MODE_KEY = 'handReadingQuiz.mode';
 
 export function createQuizStore(storage) {
   let memory = [];
@@ -96,6 +170,7 @@ export function createQuizStore(storage) {
       // keep the in-memory copy
     }
   }
+  let memoryMode = 'simple';
   return {
     all: load,
     add(record) {
@@ -103,6 +178,22 @@ export function createQuizStore(storage) {
     },
     clear() {
       save([]);
+    },
+    // Which mode the quiz was last used in, so the checkbox is remembered.
+    getMode() {
+      try {
+        return (storage && storage.getItem(MODE_KEY)) || memoryMode;
+      } catch {
+        return memoryMode;
+      }
+    },
+    setMode(mode) {
+      memoryMode = mode;
+      try {
+        if (storage) storage.setItem(MODE_KEY, mode);
+      } catch {
+        // keep the in-memory copy
+      }
     },
   };
 }
