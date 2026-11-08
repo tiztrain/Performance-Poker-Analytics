@@ -41,11 +41,13 @@ export function chartAndTableSkeletonHtml(showChart) {
     '<button class="filter-btn" data-filter="missed3b">Missed 3-bet spots</button>' +
     '<button class="filter-btn" data-filter="race">Coin flips / races</button>' +
     '</div><div id="filter-desc" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:none;"></div>' +
-    '<table class="hand-table"><thead><tr><th>Hand</th><th>Hero cards</th><th>Board</th><th>Stack (' +
+    // .table-scroll lets the table scroll sideways inside its panel on narrow phones,
+    // instead of making the whole page scroll.
+    '<div class="table-scroll"><table class="hand-table"><thead><tr><th>Hand</th><th>Hero cards</th><th>Board</th><th>Stack (' +
     amountLabel() +
     ')</th><th>Result (' +
     amountLabel() +
-    ')</th></tr></thead><tbody class="hand-tbody"></tbody></table></div>'
+    ')</th></tr></thead><tbody class="hand-tbody"></tbody></table></div></div>'
   );
 }
 
