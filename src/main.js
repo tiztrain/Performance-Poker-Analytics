@@ -1,4 +1,5 @@
 import { parseAll } from './engine/parser.js';
+import { groupByTournament } from './engine/grouping.js';
 import { renderResults } from './render/results.js';
 import { SAMPLE } from './sample-hand.js';
 import { displayMode, currentRerender, setDisplayMode } from './state.js';
@@ -63,6 +64,7 @@ document.getElementById('analyze-btn').addEventListener('click', () => {
   try {
     const hands = parseAll(text);
     renderResults(hands);
+    collapseLoadPanel(hands);
   } catch (e) {
     document.getElementById('results').innerHTML =
       '<div class="panel"><div class="flag-note">Parsing error: ' +
@@ -70,3 +72,27 @@ document.getElementById('analyze-btn').addEventListener('click', () => {
       '. This format may differ slightly from what the parser expects — paste a small sample and we can adjust it.</div></div>';
   }
 });
+
+// ---------- Collapsible load panel ----------
+// After a successful analysis the load panel shrinks to a one-line summary, so the results get
+// the page. The button reopens it to load different hands.
+const loadSummary = document.getElementById('load-summary');
+const loadBody = document.getElementById('load-body');
+const loadToggle = document.getElementById('load-toggle');
+
+function setLoadPanelOpen(open) {
+  loadBody.hidden = !open;
+  loadToggle.textContent = open ? 'Hide' : 'Load different hands';
+  loadToggle.setAttribute('aria-expanded', String(open));
+}
+
+function collapseLoadPanel(hands) {
+  const tournaments = groupByTournament(hands).length;
+  document.getElementById('load-summary-text').textContent =
+    `${hands.length} hand${hands.length === 1 ? '' : 's'} loaded from ` +
+    `${tournaments} tournament${tournaments === 1 ? '' : 's'}`;
+  loadSummary.hidden = false;
+  setLoadPanelOpen(false);
+}
+
+loadToggle.addEventListener('click', () => setLoadPanelOpen(loadBody.hidden));
