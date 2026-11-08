@@ -66,9 +66,20 @@ separately from decisions, per hand and over time.
 
 Uses showdown hands, where the opponent's cards are known, as an answer key.
 
-- **Quiz:** replay a showdown hand street by street with villain's cards hidden. At each street, pick which hand
-  categories villain still has (for example: strong value, top pair, weaker pair, draw, nothing). Then reveal the cards.
-- **Score:** accuracy over time, by street and by type of line (for example, "check-raise on the flop").
+- **Quiz (done):** replay a showdown hand street by street with villain's cards hidden. At each street, pick which
+  hand categories villain could have. Preflop: big pair, small or medium pair, big aces and broadways, suited
+  connectors and gappers, everything else. After the flop: strong (two pair or better using villain's cards), top pair
+  or overpair, weaker pair, draw (flush draw or open-ended straight draw only), nothing. A made hand beats a draw.
+- **Score (done):** 100 for the right category alone, less for each extra pick, 0 for a miss. Saved in `localStorage`
+  with averages by street and the last 20 answers against the 20 before.
+- **Settings (done):** two remembered checkboxes. **Advanced: paint the range** switches from categories to the
+  13×13 grid, scored 100 × (1 − √share of live combos painted) if villain's hand is in the range, otherwise 0. **River
+  only** asks once on the river (earlier streets are a replay) instead of every street. In advanced every-street mode,
+  each street reports only in-range or not, the range carries over, and the hand is revealed after the river. In simple
+  mode, a miss means finding the right category before moving on. Scores are kept per combination.
+- **Copy for Claude on every answer (done):** the hand, the player's read and villain's real holding, with a request
+  to explain the read. The in-app AI discussion (5.14) is the owner's goal for this.
+- **Next:** scores by type of line (for example, "check-raise on the flop").
 - **Review:** "what villains showed down with each line" across your own hands. This is a population summary (tendencies
   across all opponents), so it sits under the same feature flag as 5.10.
 - Later: the quiz feeds the drill mode (5.8).
@@ -139,6 +150,8 @@ all-in EV, flag costs), with a breakdown, the best and costliest decisions, and 
 
 ### 5.14 In-app AI discussion
 
+The owner wants this inside the app eventually, starting from the quiz's and hand table's Copy for Claude text.
+
 Chat about a hand, preloaded with the 5.1 context plus your notes and stats. Needs a serverless backend holding the API
 key, login, rate limits and a monthly spend cap.
 
@@ -163,7 +176,8 @@ New look and the name "Poker Performance Analytics", after accounts and history 
 13. AI discussion (5.14)
 14. Redesign (5.15)
 
-Done: login and account creation (Cognito hosted pages, PR #3).
+Done: login and account creation (Cognito hosted pages, PR #3), Copy for Claude (PR #5), hand-reading quiz
+(category mode).
 
 ## 7. Working agreement
 

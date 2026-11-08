@@ -41,6 +41,26 @@ infrastructure-as-code for hosting.
   the flop, your made hand on each street, and why the app flagged it. Opponents are
   renamed Villain 1, 2 and so on, and shown cards come after the action so the review
   starts from ranges. The text only goes to your clipboard; nothing is sent anywhere.
+- **Hand-reading quiz:** the **Hand-reading quiz** tab replays every loaded hand where an
+  opponent showed cards, with their cards hidden. Two checkboxes, both remembered, set how
+  it works:
+  - **Advanced: paint the range** switches from ticking categories (five starting-hand
+    groups preflop; strong, top pair, weaker pair, draw or nothing after the flop) to
+    painting their range on the 13×13 starting-hand grid. Categories score 100 for the
+    right one alone, less the more you tick, and 0 for a miss; after a miss you must find
+    the right category before moving on. The grid scores 100 × (1 − √share painted) if
+    their hand is in your range (about 83 for 3% of hands, 68 for 10%, 50 for 25%) and 0
+    if not.
+  - **River only** asks once on the river, with the earlier streets as a replay. Otherwise
+    it asks on every street; with the grid, each street says only whether their hand was
+    in your range and your range carries over, and where their hand was is shown after the
+    river.
+
+  Every answer has a **Copy for Claude** button that copies the hand, your read and their
+  real hand to go over in a chat. A finished hand shows a street-by-street recap, plus a
+  lesson if you missed. Scores are saved in this browser, separately for each combination
+  of settings.
+
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
@@ -73,9 +93,10 @@ account** and **Sign in** (top right) go to login pages run by Amazon Cognito, s
 site never sees your password. An account currently holds only your email address:
 saving hand histories to it is the next step on the roadmap.
 
-Hand histories are read locally in the page and are never uploaded. The only
-browser storage is the login session, kept in `sessionStorage` (cleared when the tab
-closes; a login lasts at most an hour). There is no analytics. The other external
+Hand histories are read locally in the page and are never uploaded. Browser storage
+holds only the login session, kept in `sessionStorage` (cleared when the tab closes; a
+login lasts at most an hour), and your hand-reading quiz answers, kept in
+`localStorage` on this device until you press **Reset scores**. There is no analytics. The other external
 requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
 
 ## Running it locally
