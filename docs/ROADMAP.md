@@ -53,14 +53,18 @@ three hand types.
 
 The base for most later features. Equity is the share of the pot a hand wins on average.
 
-- Exact equity when all hands are known (enumerating every remaining board).
-- Equity against a range (the set of hands a player could hold), by Monte Carlo sampling (simulating many random boards).
-- Extends `engine/cards.js` from 5-card to best-of-7-card evaluation. Tested against known equity values.
+- **Done:** equity when all hands are known (`engine/equity.js`). Exact on the flop and turn (every runout); preflop
+  uses 20,000 seeded Monte Carlo samples (random boards, repeatable per hand). Pots split into main and side pots. A
+  fast 7-card evaluator, tested against `engine/cards.js` on 3,000 random hands.
+- **Next:** equity against a range (the set of hands a player could hold), for the range model (5.6) and to score the
+  quiz's painted ranges by equity.
 
 ### 5.3 All-in EV
 
-For every all-in where the cards were shown, compare expected chips (equity × pot) with actual chips won. Shows "luck"
-separately from decisions, per hand and over time.
+**Done:** an **All-in EV** tab. For every all-in with cards still to come and every remaining player's cards shown, it
+compares expected chips (equity × each pot, including side pots) with actual chips, and totals the difference as luck.
+Heads-up and multiway. River all-ins are left out (no cards to come), and all-ins where an opponent mucked are listed as
+skipped. Next: luck over time, once saved history exists (5.5).
 
 ### 5.4 Hand-reading trainer (targets the owner's main leak)
 
@@ -176,8 +180,8 @@ New look and the name "Poker Performance Analytics", after accounts and history 
 13. AI discussion (5.14)
 14. Redesign (5.15)
 
-Done: login and account creation (Cognito hosted pages, PR #3), Copy for Claude (PR #5), hand-reading quiz
-(category mode).
+Done: login and account creation (Cognito hosted pages, PR #3), Copy for Claude (PR #5), collapsible load panel (PR
+#6), hand-reading quiz with category and range modes (PR #7), equity calculator and all-in EV.
 
 ## 7. Working agreement
 

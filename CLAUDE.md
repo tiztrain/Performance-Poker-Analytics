@@ -88,7 +88,8 @@ These encode real bugs or deliberate decisions; `tests/grouping.test.js` pins th
 - **Never blend stats across formats.** Regular, turbo, hyper and satellite each get their own stat panel; `getTargets`
   deliberately has no numeric benchmarks for hyper and satellite.
 - **Sum bb results per hand** using each hand's own `heroNetBB`, because blind levels change during a tournament.
-- **Keep flags framed as review prompts.** There is no equity engine: hand-strength flags and `detectPreflopRace` are
+- **Keep flags framed as review prompts.** `engine/equity.js` computes equity only when every hand is known (all-in
+  EV); there is no solver and no model of villain's range, so hand-strength flags and `detectPreflopRace` are
   heuristics, and the UI copy says so.
 
 ## Parser assumptions
