@@ -196,3 +196,10 @@ Done: login and account creation (Cognito hosted pages, PR #3), Copy for Claude 
    keeps the same ID across hands and tournaments, the opponent database can key on it. If IDs change per table or
    tournament, it can't link hands to people.
 2. **Volume.** Roughly how many tournaments or hands a week? This sets how quickly rolling stats become reliable.
+
+## 9. Decisions to review
+
+Choices made while building without the owner present. Each can be changed; say which.
+
+- **All-in EV (5.3):** the tab covers every loaded hand, not just the selected tournaments. River all-ins are left out,
+  since no cards are to come. Preflop all-ins use 20,000 random boards (about ±0.4%).
