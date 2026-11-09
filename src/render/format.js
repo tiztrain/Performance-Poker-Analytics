@@ -75,3 +75,10 @@ export function stackChangeStyle(netBB, startBB) {
   const size = pct > 0.3 ? '14px' : '13px';
   return 'color: rgb(' + r + ',' + g + ',' + b + '); font-weight:' + weight + '; font-size:' + size + ';';
 }
+
+// A signed total that has already been summed both ways (raw chips, and each hand in its own big
+// blinds), shown in whichever unit is active.
+export function fmtSignedTotal(chipsTotal, bbTotal) {
+  if (displayMode === 'chips') return (chipsTotal >= 0 ? '+' : '') + fmt(chipsTotal);
+  return (bbTotal >= 0 ? '+' : '') + bbTotal.toFixed(2) + 'bb';
+}

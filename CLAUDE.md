@@ -14,9 +14,13 @@ histories to an account is not built yet. See `README.md` for user-facing behavi
 - `src/engine` never imports from `src/render`.
 - Run `npm test`, `npm run lint` and `npm run format:check` before every commit.
 - Work on a branch, not on `main`.
-- Push feature branches without asking. Ask before merging or pushing to `main`, since that deploys the live site.
-- When unsure which approach to take (design, scope, scoring rules, poker assumptions, trade-offs), stop and ask the owner
-  before building. Lay out the options with a recommendation and discuss; don't guess on decisions that are theirs.
+- Push feature branches, open pull requests, and merge them into `main` once CI passes, without asking (the owner's
+  instruction of 2026-11-09). Merging deploys the live site, so merge only work that is tested and complete. Never push
+  directly to `main`.
+- When unsure which approach to take (design, scope, scoring rules, poker assumptions, trade-offs), take the option you
+  would recommend, build it, and record it under "Decisions to review" in the pull request and in `docs/ROADMAP.md`
+  (section 9) so the owner can overrule it later. Stop and ask only when work can't go ahead without them (credentials,
+  AWS changes, spending money).
 
 ## Learning
 
@@ -88,7 +92,8 @@ These encode real bugs or deliberate decisions; `tests/grouping.test.js` pins th
 - **Never blend stats across formats.** Regular, turbo, hyper and satellite each get their own stat panel; `getTargets`
   deliberately has no numeric benchmarks for hyper and satellite.
 - **Sum bb results per hand** using each hand's own `heroNetBB`, because blind levels change during a tournament.
-- **Keep flags framed as review prompts.** There is no equity engine: hand-strength flags and `detectPreflopRace` are
+- **Keep flags framed as review prompts.** `engine/equity.js` computes equity only when every hand is known (all-in
+  EV); there is no solver and no model of villain's range, so hand-strength flags and `detectPreflopRace` are
   heuristics, and the UI copy says so.
 
 ## Parser assumptions

@@ -36,6 +36,7 @@ export function parseHand(block) {
     summary: { totalPot: null, heroResult: 0 },
     shows: [], // {player, cards, handClass} for every "X: shows [..] (Class)" line, any player
     collections: [], // {player, amount} for every "X collected Y from pot" line, any player
+    antes: {}, // player -> ante posted (a short stack can post less than the full ante)
     raw: block,
   };
   let streetContrib = {}; // player -> amount committed THIS street (resets each street)
@@ -137,6 +138,7 @@ export function parseHand(block) {
     if ((m = line.match(/^(\S+): posts ante ([\d,.]+)$/))) {
       const amt = num(m[2]);
       hand.pot += amt;
+      hand.antes[m[1]] = (hand.antes[m[1]] || 0) + amt;
       if (m[1] === 'Hero') hand.heroInvested += amt;
       continue;
     }

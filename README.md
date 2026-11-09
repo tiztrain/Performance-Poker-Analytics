@@ -63,6 +63,14 @@ infrastructure-as-code for hosting.
   lesson if you missed. Scores are saved in this browser, separately for each combination
   of settings.
 
+- **All-in EV:** the **All-in EV** tab lists every all-in with cards still to come where
+  every remaining player's cards were shown. It gives your equity (how often you'd win
+  over every possible runout), the result that equity is worth on average (expected
+  value), what actually happened, and the difference (luck), totalled across the loaded
+  hands. Multiway all-ins are split into a main pot and side pots. Flop and turn
+  all-ins are exact; preflop ones (marked ≈) are estimated from 20,000 random boards,
+  accurate to about half a percent. All-ins where an opponent mucked are listed as
+  skipped.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
@@ -78,7 +86,8 @@ infrastructure-as-code for hosting.
 ### Limits
 
 - **Flags are prompts for review, not verdicts.** Frequencies and pot-odds math come
-  straight from the parsed actions, but there is no solver or equity engine, so
+  straight from the parsed actions. Equity is only calculated when every player's cards
+  are known (all-in EV); there is no solver and no model of what villain holds, so
   hand-strength flags are pattern-based.
 - **Multiway postflop spots** are tracked less precisely for c-bet and check-raise.
 - **Race detection** only sees hands that reached showdown, and compares ranks only, so

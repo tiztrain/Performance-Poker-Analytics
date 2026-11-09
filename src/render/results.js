@@ -4,6 +4,7 @@ import { setCurrentRerender } from '../state.js';
 import { renderStatsAndTable, renderCombined } from './table.js';
 import { dayFormatFilterHtml, dayDateFilterHtml, dayComparisonHtml } from './dayCompare.js';
 import { createQuizController } from './quiz.js';
+import { createAllInController } from './allInEvView.js';
 
 export function renderResults(allHands) {
   const container = document.getElementById('results');
@@ -14,6 +15,7 @@ export function renderResults(allHands) {
   const allDates = distinctGroupDates(allGroups);
   // Created once per load, so redraws (e.g. the BB/chips toggle) keep your place in the quiz.
   const quiz = createQuizController(allHands);
+  const allIns = createAllInController(allHands);
 
   // Tournament selection persists by the group's unique key (name+tournamentId, not
   // name alone - recurring tournaments reuse the same display name every occurrence)
@@ -23,6 +25,7 @@ export function renderResults(allHands) {
   // 'filter': the usual date + tournament selector driving the stats/table below.
   // 'daycompare': a single standalone table comparing every date, independent of selection.
   // 'quiz': the hand-reading quiz over every loaded showdown hand.
+  // 'allin': all-in EV (expected value) for every measurable all-in in the loaded hands.
   let activeView = 'filter';
   // Which formats count toward the day-by-day comparison (independent of the tournament
   // selection in the "Filter by date" view) - defaults to everything.
@@ -48,6 +51,7 @@ export function renderResults(allHands) {
       tab('filter', multiDay ? 'Filter by date' : 'Stats and hands') +
       (multiDay ? tab('daycompare', 'Day comparison') : '') +
       tab('quiz', 'Hand-reading quiz (' + quiz.itemCount + ')') +
+      tab('allin', 'All-in EV (' + allIns.spotCount + ')') +
       '</div></div>'
     );
   }
@@ -150,6 +154,12 @@ export function renderResults(allHands) {
   }
 
   function rerender() {
+    if (activeView === 'allin') {
+      container.innerHTML = viewToggleHtml() + '<div id="allin-mount"></div>';
+      allIns.render(document.getElementById('allin-mount'));
+      bindBars();
+      return;
+    }
     if (activeView === 'quiz') {
       container.innerHTML = viewToggleHtml() + '<div id="quiz-mount"></div>';
       quiz.render(document.getElementById('quiz-mount'));
