@@ -1,4 +1,6 @@
 import { parseAll } from './engine/parser.js';
+import { countNew, handsFromRecords, recordsFromText } from './engine/history.js';
+import { createHistoryStore } from './render/historyStore.js';
 import { groupByTournament } from './engine/grouping.js';
 import { renderResults } from './render/results.js';
 import { SAMPLE } from './sample-hand.js';
@@ -58,41 +60,89 @@ document.querySelectorAll('.unit-btn').forEach(btn => {
   });
 });
 
-document.getElementById('analyze-btn').addEventListener('click', () => {
+// ---------- Analyze, with saved history ----------
+// Every analyzed upload is saved in this browser (IndexedDB) and merged with what was saved
+// before, so stats cover all your sessions. Hands are keyed by hand ID, so loading the same file
+// twice changes nothing. The built-in sample is shown on its own and never saved.
+const history = createHistoryStore();
+const resultsEl = document.getElementById('results');
+const emptyResultsHtml = resultsEl.innerHTML;
+
+function showParseError(message) {
+  resultsEl.innerHTML =
+    '<div class="panel"><div class="flag-note">Parsing error: ' +
+    message +
+    '. This format may differ slightly from what the parser expects — paste a small sample and we can adjust it.</div></div>';
+}
+
+document.getElementById('analyze-btn').addEventListener('click', async () => {
   const text = document.getElementById('hh-input').value.trim();
   if (!text) return;
   try {
-    const hands = parseAll(text);
-    renderResults(hands);
-    collapseLoadPanel(hands);
+    if (text === SAMPLE.trim()) {
+      const hands = parseAll(text);
+      renderResults(hands);
+      collapseLoadPanel(`${hands.length} sample hands (not saved to your history)`);
+      return;
+    }
+    const records = recordsFromText(text);
+    if (!records.length) {
+      showParseError('no hands starting "CoinPoker Hand #" with a hand number were found');
+      return;
+    }
+    const added = countNew(await history.ids(), records);
+    await history.putMany(records);
+    showHistory(`${added} new hand${added === 1 ? '' : 's'} added. `);
   } catch (e) {
-    document.getElementById('results').innerHTML =
-      '<div class="panel"><div class="flag-note">Parsing error: ' +
-      e.message +
-      '. This format may differ slightly from what the parser expects — paste a small sample and we can adjust it.</div></div>';
+    showParseError(e.message);
   }
 });
 
+async function showHistory(prefix = '') {
+  const hands = handsFromRecords(await history.all());
+  if (!hands.length) return false;
+  renderResults(hands);
+  const tournaments = groupByTournament(hands).length;
+  const where = (await history.persistent()) ? 'saved in this browser' : 'kept for this visit only';
+  collapseLoadPanel(
+    prefix +
+      `${hands.length} hand${hands.length === 1 ? '' : 's'} from ${tournaments} tournament` +
+      `${tournaments === 1 ? '' : 's'}, ${where}.`,
+  );
+  clearHistoryBtn.hidden = false;
+  return true;
+}
+
 // ---------- Collapsible load panel ----------
 // After a successful analysis the load panel shrinks to a one-line summary, so the results get
-// the page. The button reopens it to load different hands.
+// the page. The button reopens it to add more hands.
 const loadSummary = document.getElementById('load-summary');
 const loadBody = document.getElementById('load-body');
 const loadToggle = document.getElementById('load-toggle');
+const clearHistoryBtn = document.getElementById('clear-history');
 
 function setLoadPanelOpen(open) {
   loadBody.hidden = !open;
-  loadToggle.textContent = open ? 'Hide' : 'Load different hands';
+  loadToggle.textContent = open ? 'Hide' : 'Add more hands';
   loadToggle.setAttribute('aria-expanded', String(open));
 }
 
-function collapseLoadPanel(hands) {
-  const tournaments = groupByTournament(hands).length;
-  document.getElementById('load-summary-text').textContent =
-    `${hands.length} hand${hands.length === 1 ? '' : 's'} loaded from ` +
-    `${tournaments} tournament${tournaments === 1 ? '' : 's'}`;
+function collapseLoadPanel(summary) {
+  document.getElementById('load-summary-text').textContent = summary;
   loadSummary.hidden = false;
+  clearHistoryBtn.hidden = true;
   setLoadPanelOpen(false);
 }
 
 loadToggle.addEventListener('click', () => setLoadPanelOpen(loadBody.hidden));
+
+clearHistoryBtn.addEventListener('click', async () => {
+  if (!window.confirm('Delete every hand saved in this browser? Your hand-history files are not affected.')) return;
+  await history.clear();
+  resultsEl.innerHTML = emptyResultsHtml;
+  loadSummary.hidden = true;
+  setLoadPanelOpen(true);
+});
+
+// Open straight into the saved history, if there is one.
+showHistory();

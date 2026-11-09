@@ -1,4 +1,10 @@
-import { groupByTournament, groupStartDate, distinctGroupDates, formatDateLabel } from '../engine/grouping.js';
+import {
+  groupByTournament,
+  groupStartDate,
+  distinctGroupDates,
+  formatDateLabel,
+  handSortKey,
+} from '../engine/grouping.js';
 import { FORMAT_ORDER, FORMAT_LABELS } from '../engine/format.js';
 import { setCurrentRerender } from '../state.js';
 import { renderStatsAndTable, renderCombined } from './table.js';
@@ -21,7 +27,14 @@ export function renderResults(allHands) {
   // name alone - recurring tournaments reuse the same display name every occurrence)
   // so it survives the date filter narrowing which tournaments are in view.
   let selectedDates = new Set(allDates); // default: every date included
-  let selectedTourneys = new Set(allGroups.length ? [allGroups[0].key] : []);
+  // Every tournament starts selected, so saved history opens on stats over everything.
+  let selectedTourneys = new Set(allGroups.map(g => g.key));
+  // Last-N-hands window for the stats view: 0 means every hand.
+  let handWindow = 0;
+  const sortedAll = allHands
+    .slice()
+    .sort((a, b) => (handSortKey(a) < handSortKey(b) ? -1 : handSortKey(a) > handSortKey(b) ? 1 : 0));
+  let windowCache = { n: 0, groups: allGroups };
   // 'filter': the usual date + tournament selector driving the stats/table below.
   // 'daycompare': a single standalone table comparing every date, independent of selection.
   // 'quiz': the hand-reading quiz over every loaded showdown hand.
@@ -56,9 +69,47 @@ export function renderResults(allHands) {
     );
   }
 
+  // Tournaments limited to the hands inside the last-N window (tournaments with none drop out).
+  function windowGroups() {
+    if (!handWindow || handWindow >= allHands.length) return allGroups;
+    if (windowCache.n !== handWindow) {
+      const ids = new Set(sortedAll.slice(-handWindow).map(h => h.id));
+      windowCache = {
+        n: handWindow,
+        groups: allGroups.map(g => ({ ...g, hands: g.hands.filter(h => ids.has(h.id)) })).filter(g => g.hands.length),
+      };
+    }
+    return windowCache.groups;
+  }
+
   function dateFilteredGroups() {
-    if (allDates.length <= 1) return allGroups;
-    return allGroups.filter(g => !g.startDate || selectedDates.has(g.startDate));
+    if (allDates.length <= 1) return windowGroups();
+    return windowGroups().filter(g => !g.startDate || selectedDates.has(g.startDate));
+  }
+
+  // Only offered once there are enough hands for a window to matter.
+  function windowBarHtml() {
+    if (allHands.length <= 1000) return '';
+    const options = [[0, 'All ' + allHands.length.toLocaleString() + ' hands']];
+    if (allHands.length > 5000) options.push([5000, 'Last 5,000']);
+    options.push([1000, 'Last 1,000']);
+    return (
+      '<div class="panel"><h2>Hands to include</h2><div class="filter-row">' +
+      options
+        .map(
+          ([n, label]) =>
+            '<button class="filter-btn window-tab' +
+            (handWindow === n ? ' active' : '') +
+            '" data-window="' +
+            n +
+            '">' +
+            label +
+            '</button>',
+        )
+        .join('') +
+      '</div><div class="caveat">Your most recent hands by time, so you can see whether recent play differs from ' +
+      'your long-run numbers. Date and tournament filters below apply within this window.</div></div>'
+    );
   }
 
   function dateBarHtml() {
@@ -181,6 +232,7 @@ export function renderResults(allHands) {
     const visibleKeys = groups.map(g => g.key);
 
     let bodyHtml = viewToggleHtml();
+    bodyHtml += windowBarHtml();
     bodyHtml += dateBarHtml();
 
     if (allDates.length > 1 && selectedDates.size === 0) {
@@ -229,6 +281,12 @@ export function renderResults(allHands) {
   }
 
   function bindBars() {
+    container.querySelectorAll('.window-tab').forEach(btn => {
+      btn.addEventListener('click', () => {
+        handWindow = Number(btn.dataset.window);
+        rerender();
+      });
+    });
     container.querySelectorAll('.view-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         if (btn.dataset.view === activeView) return;

@@ -21,9 +21,14 @@ infrastructure-as-code for hosting.
    or paste text and click **Analyze hands**. **Load the 4-hand sample** fills the box
    with example hands if you just want to see the output (click **Analyze hands** after).
    Once the hands are analyzed, the load panel shrinks to a one-line summary so the
-   results get the full width; **Load different hands** opens it again.
-2. Pick what to look at. Tournaments are listed by format, and selecting several
-   combines them. If the hands span more than one day, you also get date filters and a
+   results get the full width; **Add more hands** opens it again.
+   Every upload is saved in this browser and merged with what you loaded before, so the
+   app opens straight into your whole history next time. Loading the same file twice
+   changes nothing (hands are matched by hand number), and the sample is never saved.
+   **Clear saved history** deletes it.
+2. Pick what to look at. Every tournament starts selected; tournaments are listed by
+   format, and you can narrow the selection. With more than 1,000 hands saved you can
+   also limit the stats to your last 1,000 (or 5,000) hands. If the hands span more than one day, you also get date filters and a
    **Day comparison** view.
 3. Switch every amount between big blinds and chips with the **BB / Chips** toggle in
    the top corner.
@@ -34,6 +39,13 @@ infrastructure-as-code for hosting.
   c-bet, fold to c-bet, check-raise, WTSD, W$SD and aggression factor. Formats (regular,
   turbo, hyper, satellite) are classified from the tournament name and kept separate,
   because correct strategy differs too much between them to blend the numbers.
+- **How reliable each stat is:** every stat card shows a 95% confidence range and its
+  sample, e.g. "likely 6–24% · 50 chances": the band your true rate most likely sits
+  in. Small samples give wide ranges, so a red number from a handful of chances
+  shouldn't worry you yet.
+- **Breakdown by stack depth and position:** under each stat panel, VPIP, PFR, 3-bet,
+  fold to 3-bet, c-bet, WTSD and bb won split by effective stack (under 10, 10–20,
+  20–40 and 40+ big blinds) and by your seat.
 - **Benchmarks:** regular and turbo panels color-code 3-bet defense, fold to 3-bet,
   fold to c-bet and check-raise against target ranges. Hyper and satellite panels show
   a note instead, since those fixed targets don't apply there.
@@ -104,10 +116,12 @@ account** and **Sign in** (top right) go to login pages run by Amazon Cognito, s
 site never sees your password. An account currently holds only your email address:
 saving hand histories to it is the next step on the roadmap.
 
-Hand histories are read locally in the page and are never uploaded. Browser storage
-holds only the login session, kept in `sessionStorage` (cleared when the tab closes; a
-login lasts at most an hour), and your hand-reading quiz answers, kept in
-`localStorage` on this device until you press **Reset scores**. There is no analytics. The other external
+Hand histories are read locally in the page and are never uploaded. They are saved in
+this browser's IndexedDB (a database built into the browser, on this device only) so
+your history is there next time; **Clear saved history** deletes them. Other browser
+storage holds the login session in `sessionStorage` (cleared when the tab closes; a
+login lasts at most an hour) and your quiz answers and settings in `localStorage`
+until you press **Reset**. There is no analytics. The other external
 requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
 
 ## Running it locally
