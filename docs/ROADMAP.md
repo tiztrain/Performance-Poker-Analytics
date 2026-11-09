@@ -90,11 +90,12 @@ Uses showdown hands, where the opponent's cards are known, as an answer key.
 
 ### 5.5 Saved history (in the browser first)
 
-Saves imported hands, notes and settings in IndexedDB (a database built into the browser), so stats can cover many
-tournaments. One tournament is too small a sample for most frequencies. Then:
+**Done.** Every analyzed upload is saved in IndexedDB (a database built into the browser) as raw hand text, keyed by
+hand ID, and merged into the history the app opens on. Stats cards show a 95% confidence range (Wilson interval) and
+sample size; each stat panel has a collapsible breakdown by stack depth (effective stack under 10, 10–20, 20–40, 40+
+big blinds) and by position; a last-1,000 / last-5,000 window appears once more than 1,000 hands are saved.
 
-- Stats over rolling windows (last 1,000 / 5,000 hands) with confidence ranges.
-- Stats by **stack depth** (effective stack under 10, 10–20, 20–40, 40+ big blinds) as well as by position.
+- Next: notes per hand, and luck and quiz trends over time.
 - Cloud storage tied to the account comes later (5.12).
 
 ### 5.6 Range model
@@ -203,3 +204,7 @@ Choices made while building without the owner present. Each can be changed; say 
 
 - **All-in EV (5.3):** the tab covers every loaded hand, not just the selected tournaments. River all-ins are left out,
   since no cards are to come. Preflop all-ins use 20,000 random boards (about ±0.4%).
+- **Saved history (5.5):** every tournament now starts selected (before, only the first one was), so the app opens on
+  stats over your whole history. The built-in sample is never saved. The last-N window only appears once more than
+  1,000 hands are saved. Breakdowns show VPIP, PFR, 3-bet, fold to 3-bet, c-bet, WTSD and bb won; other stats can be
+  added. Hands are stored as raw text and parsed again on load, so parser fixes apply to old hands too.

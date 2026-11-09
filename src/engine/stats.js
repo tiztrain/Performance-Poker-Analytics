@@ -194,6 +194,20 @@ export function computeStats(hands) {
     wsd: pct(s.wonAtShowdown, s.reachedShowdownOfFlopsSeen),
     aggressionFactor:
       s.postflopCalls > 0 ? (s.postflopBets / s.postflopCalls).toFixed(2) : s.postflopBets > 0 ? '∞' : null,
+    // [times it happened, chances] for each percentage stat, so the UI can show sample sizes and
+    // confidence ranges (see engine/confidence.js).
+    counts: {
+      vpip: [s.vpip, s.hands],
+      pfr: [s.pfr, s.hands],
+      threeBet: [s.threeBets, s.threeBetOpps],
+      foldToThreeBet: [s.foldedToThreeBet, s.facedThreeBetOpps],
+      threeBetDefense: [threeBetDefended, s.facedThreeBetOpps],
+      cbet: [s.cbets, s.cbetOpps],
+      foldToCbet: [s.foldedToCbet, s.facedCbetOpps],
+      checkRaise: [s.checkRaises, s.checkRaiseOpps],
+      wtsd: [s.reachedShowdownOfFlopsSeen, s.sawFlop],
+      wsd: [s.wonAtShowdown, s.reachedShowdownOfFlopsSeen],
+    },
     raw: s,
   };
 }
