@@ -193,7 +193,10 @@ hand cached in the system prompt and server-side refusal fallbacks on. The key l
 
 ### 5.15 Poker-themed redesign
 
-New look and the name "Poker Performance Analytics", after accounts and history so it covers those screens.
+**Done:** the name "Poker Performance Analytics" with a chip logo; a dark felt-table theme (green felt surfaces, gold
+accents, a soft spotlight); cards drawn as white playing cards in a four-colour deck; and views grouped into three
+sections (Results, Study, Settings), each remembering the view last used. Settings gains a Targets page with every
+format's target editor.
 
 ## 6. Build order
 
@@ -278,3 +281,6 @@ Choices made while building without the owner present. Each can be changed; say 
   devices changed one, the device syncing now wins). Clear saved history doesn't touch the account copy, and a cleared
   device doesn't re-download batches it had already seen. Old S3 versions are kept 30 days. Limits: 1,000 hands and
   3 MB per request, 5,000 batches per user.
+- **Redesign (5.15):** four-colour deck (hearts red, diamonds blue, clubs green, spades black) on white cards, for
+  quicker suit reading; grouping: Results = stats, day comparison, all-in EV, play quality; Study = review queue, quiz,
+  bluffs, push/fold; Settings = ranges, targets. The repository and package keep their names.

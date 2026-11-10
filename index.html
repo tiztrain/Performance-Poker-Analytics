@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Hand History Review</title>
+    <title>Poker Performance Analytics</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap"
@@ -11,23 +11,26 @@
     />
     <style>
       :root {
-        --bg-base: #0d1117;
-        --bg-panel: #161b22;
-        --bg-panel-2: #1c2128;
-        --bg-hover: #21262d;
-        --text-primary: #e6e8eb;
-        --text-muted: #7d8590;
-        --text-faint: #52585f;
-        --accent-gold: #c9974a;
-        --accent-gold-dim: #8a6a38;
-        --accent-red: #c0524f;
+        /* Dark felt table: deep green surfaces, gold accents. */
+        --bg-base: #08150f;
+        --bg-panel: #0f2419;
+        --bg-panel-2: #133020;
+        --bg-hover: #1a3d29;
+        --text-primary: #eef3ee;
+        --text-muted: #9cb3a3;
+        --text-faint: #62806c;
+        --accent-gold: #d8ad55;
+        --accent-gold-dim: #8f7236;
+        --accent-red: #e0655e;
         --accent-red-dim: #7a3634;
-        --accent-green: #5a9c7c;
-        --border: #2a2f37;
-        --suit-h: #d1524f;
-        --suit-d: #e0954f;
-        --suit-c: #6fb5c9;
-        --suit-s: #c9cdd3;
+        --accent-green: #6cc495;
+        --border: #24493a;
+        /* Four-colour deck, printed on white playing cards (.pcard). */
+        --suit-h: #c62828;
+        --suit-d: #1565c0;
+        --suit-c: #2e7d32;
+        --suit-s: #1b1d1c;
+        --card-face: #fbfaf5;
         --format-regular: #8aa8d9;
         --format-turbo: #e0a355;
         --format-hyper: #d97fc9;
@@ -41,7 +44,9 @@
       }
       body {
         margin: 0;
-        background: var(--bg-base);
+        /* A soft spotlight on the felt. */
+        background: radial-gradient(ellipse 120% 70% at 50% -10%, #17482f 0%, rgba(8, 21, 15, 0) 70%), var(--bg-base);
+        background-attachment: fixed;
         color: var(--text-primary);
         font-family: var(--sans);
         line-height: 1.5;
@@ -705,8 +710,71 @@
       .panel {
         background: var(--bg-panel);
         border: 1px solid var(--border);
-        border-radius: 8px;
+        border-radius: 12px;
         padding: 18px;
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.03),
+          0 6px 18px rgba(0, 0, 0, 0.25);
+      }
+      /* Cards drawn as small white playing cards. */
+      .pcard {
+        display: inline-block;
+        min-width: 1.9em;
+        padding: 1px 4px;
+        margin: 1px 1px;
+        border-radius: 4px;
+        background: var(--card-face);
+        border: 1px solid #c9c4b4;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        font-family: var(--mono);
+        font-weight: 700;
+        line-height: 1.35;
+        text-align: center;
+      }
+      .pcard.h {
+        color: var(--suit-h);
+      }
+      .pcard.d {
+        color: var(--suit-d);
+      }
+      .pcard.c {
+        color: var(--suit-c);
+      }
+      .pcard.s {
+        color: var(--suit-s);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+      }
+      .brand-logo {
+        width: 46px;
+        height: 46px;
+        flex-shrink: 0;
+      }
+      .nav-groups {
+        display: flex;
+        gap: 6px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .nav-group {
+        background: none;
+        border: 1px solid transparent;
+        border-radius: 999px;
+        color: var(--text-muted);
+        padding: 6px 16px;
+        font-family: var(--sans);
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        letter-spacing: 0.02em;
+      }
+      .nav-group.active {
+        color: var(--accent-gold);
+        border-color: var(--accent-gold-dim);
+        background: rgba(216, 173, 85, 0.08);
       }
       .panel + .panel {
         margin-top: 18px;
@@ -1180,13 +1248,23 @@
     <div class="wrap">
       <div class="chart-tooltip" id="chart-tooltip"></div>
       <header>
-        <div>
-          <h1>Hand History Review</h1>
-          <p>
-            Paste or upload a CoinPoker hand history export below. This parses every hand, computes your actual
-            VPIP/PFR/3-bet/fold-to-3-bet/cbet/check-raise frequencies directly from the action data, and flags calls
-            where the pot odds required unusually high equity — for you to review, not a verdict.
-          </p>
+        <div class="brand">
+          <svg class="brand-logo" viewBox="0 0 48 48" aria-hidden="true">
+            <circle cx="24" cy="24" r="22" fill="#d8ad55" />
+            <circle cx="24" cy="24" r="22" fill="none" stroke="#08150f" stroke-width="5" stroke-dasharray="7 7.4" />
+            <circle cx="24" cy="24" r="14" fill="#0f2419" stroke="#f3e2b5" stroke-width="1.5" />
+            <path
+              d="M24 15c-3 4-8 6-8 10a4 4 0 0 0 7 2.6L22 32h4l-1-4.4A4 4 0 0 0 32 25c0-4-5-6-8-10z"
+              fill="#f3e2b5"
+            />
+          </svg>
+          <div>
+            <h1>Poker Performance Analytics</h1>
+            <p>
+              Post-session review for CoinPoker tournaments: your real frequencies, the spots worth studying, and
+              practice to fix them. Reviews and prompts, not verdicts.
+            </p>
+          </div>
         </div>
         <div class="header-controls">
           <div class="account" id="account" hidden></div>
@@ -1217,8 +1295,8 @@
               </div>
               <div class="file-hint">
                 Best on mobile — pick the file(s) straight from Files/Downloads on your phone, no pasting needed.
-                Multiple files and drag-and-drop (desktop) both work; everything is read locally in the page, nothing is
-                uploaded anywhere.
+                Multiple files and drag-and-drop (desktop) both work. Files are read in this page and saved in this
+                browser; they only go to your account if you're signed in with cloud history on.
               </div>
               <div class="or-divider">or paste</div>
               <textarea id="hh-input" placeholder="Paste one or more CoinPoker hand histories here..."></textarea>
@@ -1227,16 +1305,16 @@
             </div>
             <div>
               <div class="caveat">
-                <b>Scope, honestly:</b> this computes exact frequency stats and exact pot-odds math from the parsed
-                actions — that part is precise. It does <b>not</b> run solver equity calculations, so hand-strength
-                flags are pattern-based coaching judgment, not GTO-verified EV loss. Multiway postflop spots are tracked
-                less precisely for cbet/check-raise stats, same limitation real solvers apply to their own analyzers.
+                <b>Scope, honestly:</b> frequencies and pot odds come straight from the parsed actions, so they're
+                exact. Equity is exact for all-ins where the cards are known; elsewhere it's estimated against modelled
+                ranges, and there's no solver, so flags and scores are review prompts, not verdicts. Multiway postflop
+                spots are tracked less precisely for c-bet and check-raise.
               </div>
               <div class="suit-legend">
-                <span><span class="sw" style="color: var(--suit-h)">♥</span>Hearts</span>
-                <span><span class="sw" style="color: var(--suit-d)">♦</span>Diamonds</span>
-                <span><span class="sw" style="color: var(--suit-c)">♣</span>Clubs</span>
-                <span><span class="sw" style="color: var(--suit-s)">♠</span>Spades</span>
+                <span><span class="pcard h">♥</span> Hearts</span>
+                <span><span class="pcard d">♦</span> Diamonds</span>
+                <span><span class="pcard c">♣</span> Clubs</span>
+                <span><span class="pcard s">♠</span> Spades</span>
               </div>
             </div>
           </div>

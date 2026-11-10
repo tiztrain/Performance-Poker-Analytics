@@ -1,5 +1,5 @@
 import { computeStats } from '../engine/stats.js';
-import { FORMAT_LABELS } from '../engine/format.js';
+import { FORMAT_LABELS, FORMAT_ORDER } from '../engine/format.js';
 import { createTargetStore, effectiveTargets, gradeStat, rangeLabel, TARGET_STATS } from '../engine/targets.js';
 import { currentRerender } from '../state.js';
 import { wilsonRange } from '../engine/confidence.js';
@@ -157,12 +157,12 @@ function breakdownHtml(hands) {
 }
 
 // Editor for this format's target ranges. Saving or resetting redraws the current view.
-function targetEditorHtml(format, targets, custom) {
+function targetEditorHtml(format, targets, custom, forceOpen = false) {
   let h =
     '<details class="breakdowns target-editor" data-format="' +
     format +
     '"' +
-    (openEditors.has(format) ? ' open' : '') +
+    (forceOpen || openEditors.has(format) ? ' open' : '') +
     '><summary>Edit targets for ' +
     FORMAT_LABELS[format].toLowerCase() +
     ' tournaments</summary><div class="caveat">Set your own target range for each stat (0–100%). Leave both boxes ' +
@@ -223,4 +223,17 @@ export function bindTargetEditors(root) {
       redraw();
     });
   });
+}
+
+// The Settings > Targets page: every format's target editor in one place.
+export function targetsPageHtml() {
+  const overrides = targetStore.load();
+  return (
+    '<div class="panel"><h2>Targets</h2><div class="quiz-intro">The target range for each stat, per tournament format. ' +
+    'Stat cards are green inside the range, gold just outside and red further out. Regular uses common tournament ' +
+    'ranges; turbo and hyper are estimates; satellites have none unless you add them. The same editors also sit under ' +
+    'each stat panel.</div>' +
+    FORMAT_ORDER.map(f => targetEditorHtml(f, effectiveTargets(f, overrides), overrides[f] || {}, true)).join('') +
+    '</div>'
+  );
 }
