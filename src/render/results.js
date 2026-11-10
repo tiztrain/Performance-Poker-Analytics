@@ -16,6 +16,7 @@ import { createReviewQueueController } from './reviewQueueView.js';
 import { createRangesController } from './rangesView.js';
 import { createBluffsController } from './bluffsView.js';
 import { createQualityController } from './qualityView.js';
+import { createTrendsController } from './trendsView.js';
 import { bindTargetEditors, targetsPageHtml } from './statGrid.js';
 
 export function renderResults(allHands) {
@@ -33,6 +34,7 @@ export function renderResults(allHands) {
   const rangesView = createRangesController();
   const bluffs = createBluffsController(allHands);
   const quality = createQualityController(allHands);
+  const trends = createTrendsController(allHands, { quality, allIns });
 
   // Tournament selection persists by the group's unique key (name+tournamentId, not
   // name alone - recurring tournaments reuse the same display name every occurrence)
@@ -75,6 +77,7 @@ export function renderResults(allHands) {
         ...(multiDay ? [['daycompare', 'Day comparison']] : []),
         ['allin', 'All-in EV (' + allIns.spotCount + ')'],
         ['quality', 'Play quality'],
+        ['trends', 'Trends'],
       ];
     }
     if (group === 'study') {
@@ -259,6 +262,12 @@ export function renderResults(allHands) {
     if (activeView === 'targets') {
       container.innerHTML = viewToggleHtml() + '<div id="targets-mount">' + targetsPageHtml() + '</div>';
       bindTargetEditors(document.getElementById('targets-mount'));
+      bindBars();
+      return;
+    }
+    if (activeView === 'trends') {
+      container.innerHTML = viewToggleHtml() + '<div id="trends-mount"></div>';
+      trends.render(document.getElementById('trends-mount'));
       bindBars();
       return;
     }

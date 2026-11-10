@@ -1246,6 +1246,74 @@
         overflow-x: auto;
         padding-bottom: 4px;
       }
+      .trend-chart {
+        width: 100%;
+        height: auto;
+        display: block;
+        margin: 6px 0 4px;
+      }
+      .trend-grid {
+        stroke: var(--border);
+        stroke-width: 1;
+      }
+      .trend-zero {
+        stroke: var(--text-faint);
+        stroke-width: 1;
+        stroke-dasharray: 3 3;
+      }
+      .trend-axis {
+        fill: var(--text-faint);
+        font-family: var(--mono);
+        font-size: 11px;
+      }
+      .trend-band {
+        fill: rgba(108, 196, 149, 0.13);
+      }
+      .trend-line {
+        fill: none;
+        stroke-width: 2;
+        stroke-linejoin: round;
+        stroke-linecap: round;
+      }
+      .trend-dot {
+        stroke: var(--bg-panel);
+        stroke-width: 2;
+      }
+      .trend-cross {
+        stroke: var(--text-muted);
+        stroke-width: 1;
+      }
+      .trend-hit {
+        fill: transparent;
+        cursor: crosshair;
+      }
+      .trend-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 8px;
+      }
+      .trend-legend i {
+        display: inline-block;
+        vertical-align: middle;
+        margin-right: 6px;
+      }
+      .trend-legend i.line {
+        width: 16px;
+        height: 2px;
+      }
+      .trend-legend i.dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+      }
+      .trend-legend i.band {
+        width: 14px;
+        height: 10px;
+        background: rgba(108, 196, 149, 0.25);
+      }
       .chart-tooltip {
         position: fixed;
         background: var(--bg-panel-2);
