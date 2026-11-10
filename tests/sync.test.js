@@ -43,6 +43,18 @@ describe('mergeSnapshots', () => {
     expect(mergeSnapshots({}, { 'statTargets.v1': 'B' }, {})).toEqual({ 'statTargets.v1': 'B' });
   });
 
+  it('merges ICM payouts per tournament', () => {
+    const base = JSON.stringify({ A: { places: [1] }, B: { places: [2] } });
+    const local = JSON.stringify({ A: { places: [1] }, B: { places: [3] }, C: { places: [4] } });
+    const remote = JSON.stringify({ B: { places: [2] }, D: { places: [5] } }); // A removed there
+    const merged = JSON.parse(
+      mergeSnapshots({ 'icmPayouts.v1': local }, { 'icmPayouts.v1': remote }, { 'icmPayouts.v1': base })[
+        'icmPayouts.v1'
+      ],
+    );
+    expect(merged).toEqual({ B: { places: [3] }, C: { places: [4] }, D: { places: [5] } });
+  });
+
   it('reads only the synced keys from storage', () => {
     const data = { 'statTargets.v1': '{}', 'auth.tokens': 'secret', 'reviewQueue.v1': '{}' };
     const storage = { getItem: k => (k in data ? data[k] : null) };

@@ -6,6 +6,8 @@
 // - Everything else (targets, ranges, quiz settings): a three-way merge against the snapshot
 //   from the last sync. If only one side changed it since then, that side wins; if both did, this
 //   device's version wins (it's the one in use now).
+// - ICM payouts: the same three-way merge, but per tournament, so payouts entered for different
+//   tournaments on two devices are both kept.
 
 export const SYNC_KEYS = [
   'handReadingQuiz.v1',
@@ -14,6 +16,7 @@ export const SYNC_KEYS = [
   'reviewQueue.v1',
   'statTargets.v1',
   'rangeModel.v1',
+  'icmPayouts.v1',
 ];
 
 export function snapshot(storage) {
@@ -60,6 +63,23 @@ function mergeReview(a, b) {
   return JSON.stringify({ reviewed: { ...x.reviewed, ...y.reviewed }, drills });
 }
 
+function threeWay(l, r, b) {
+  return l === b ? r : l; // unchanged here: take theirs; changed here (or both): keep ours
+}
+
+function mergeEntries(l, r, b) {
+  const x = parse(l, {});
+  const y = parse(r, {});
+  const z = parse(b, {});
+  const out = {};
+  new Set([...Object.keys(x), ...Object.keys(y)]).forEach(k => {
+    const s = v => (v === undefined ? undefined : JSON.stringify(v));
+    const v = threeWay(s(x[k]), s(y[k]), s(z[k]));
+    if (v !== undefined) out[k] = JSON.parse(v);
+  });
+  return JSON.stringify(out);
+}
+
 // local, remote and base are { key: string } snapshots. Returns the merged snapshot.
 export function mergeSnapshots(local, remote, base = {}) {
   const out = {};
@@ -69,6 +89,7 @@ export function mergeSnapshots(local, remote, base = {}) {
     if (l === undefined && r === undefined) return;
     if (k === 'handReadingQuiz.v1') out[k] = mergeQuiz(l, r);
     else if (k === 'reviewQueue.v1') out[k] = mergeReview(l, r);
+    else if (k === 'icmPayouts.v1') out[k] = mergeEntries(l, r, base[k]);
     else if (l === base[k])
       out[k] = r !== undefined ? r : l; // unchanged here: take theirs
     else out[k] = l !== undefined ? l : r; // changed here (or both): keep ours

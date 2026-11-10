@@ -146,6 +146,12 @@ infrastructure-as-code for hosting.
   results), quiz accuracy over your last 20 answers per mode, and any key stat per
   format with its target range shaded. Hover a point for details, or open each chart
   as a table.
+- **ICM on push/fold:** in the **Push/fold** tab, paste a tournament's payout table from
+  the CoinPoker lobby (one place per line, e.g. `1st ₮125.00`, `4-6 ₮20.00`, or
+  percentages). Each spot then shows the ICM (Independent Chip Model: prize-money
+  equity) verdict next to the chip chart, and what a different choice gave up in prize
+  money. The players at your table are treated as the whole field, so it's exact at a
+  final table and too cautious earlier.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
