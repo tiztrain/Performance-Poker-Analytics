@@ -100,9 +100,9 @@ These encode real bugs or deliberate decisions; `tests/grouping.test.js` pins th
 - **Never blend stats across formats.** Regular, turbo, hyper and satellite each get their own stat panel with its own
   targets (`engine/targets.js`). Turbo and hyper defaults are labelled estimates; satellite deliberately has none.
 - **Sum bb results per hand** using each hand's own `heroNetBB`, because blind levels change during a tournament.
-- **Keep flags framed as review prompts.** `engine/equity.js` computes equity only when every hand is known (all-in
-  EV); there is no solver and no model of villain's range, so hand-strength flags and `detectPreflopRace` are
-  heuristics, and the UI copy says so.
+- **Keep flags framed as review prompts.** There is no solver. `engine/equity.js` is exact only when every hand is
+  known (all-in EV); `engine/rangeModel.js` estimates villain's range from editable charts and heuristic narrowing, so
+  "vs their estimated range" figures, hand-strength flags and `detectPreflopRace` are estimates, and the UI says so.
 
 ## Parser assumptions
 

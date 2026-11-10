@@ -17,6 +17,7 @@ import {
 import { renderImpactChart } from './chart.js';
 import { bindCopyButton } from './clipboard.js';
 import { bindChatButton, chatButtonHtml } from './chatPanel.js';
+import { fillRangeEquity } from './rangeEquity.js';
 import { bindTargetEditors, statGridHtml } from './statGrid.js';
 import { requiredEquity } from '../engine/moreFlags.js';
 
@@ -117,7 +118,11 @@ export function bindChartAndTable(hands, mountEl) {
           row.style.outline = '';
         }, 1600);
         const detail = row.nextElementSibling;
-        if (detail && detail.classList.contains('detail')) detail.classList.add('open');
+        if (detail && detail.classList.contains('detail')) {
+          detail.classList.add('open');
+          const hand = hands.find(x => x.id === handId);
+          if (hand) fillRangeEquity(detail, hand);
+        }
       }
     });
   }
@@ -287,7 +292,14 @@ export function bindChartAndTable(hands, mountEl) {
                 ' <span class="req-eq">' +
                 (a.action === 'call' ? 'needed ' : 'calling needed ') +
                 Math.round(need * 100) +
-                '% equity</span>';
+                '% equity</span>' +
+                (a.action === 'call'
+                  ? ' <span class="range-eq" data-street="' +
+                    street +
+                    '" data-index="' +
+                    h.streets[street].indexOf(a) +
+                    '"></span>'
+                  : '');
             }
           }
           detailHtml += '<div class="action-line">' + line + '</div>';
@@ -357,7 +369,10 @@ export function bindChartAndTable(hands, mountEl) {
       bindCopyButton(detail, handText);
       bindChatButton(detail, handText, 'Hand #' + h.id);
 
-      row.addEventListener('click', () => detail.classList.toggle('open'));
+      row.addEventListener('click', () => {
+        detail.classList.toggle('open');
+        if (detail.classList.contains('open')) fillRangeEquity(detail, h);
+      });
     });
   }
 

@@ -100,9 +100,14 @@ big blinds) and by position; a last-1,000 / last-5,000 window appears once more 
 
 ### 5.6 Range model
 
-A simple, editable model of what villains hold: preflop ranges by position and action, narrowed on each street by
-their actions. Shown on each hand as a heuristic, it also feeds equity-vs-range checks. The hand-reading quiz (5.4) checks
-the model against reality.
+**Done** (`engine/rangeModel.js`): default preflop charts (open by position, limp, call an open, big blind defend,
+3-bet, call a 3-bet, 4-bet, big blind check) built from hand strength and editable in a **Ranges** tab. Villain's range
+comes from their last preflop action, then each postflop action re-weights holdings by hand category. Each Hero call in
+the hand detail shows "you had ~X% vs their estimated range" (green when above the equity needed), estimated by sampling
+when the hand is opened.
+
+- Next: show the estimated range on each hand's grid; use it in the advanced quiz; adjust ranges per opponent once the
+  opponent database exists.
 
 ### 5.7 Push/fold checks
 
@@ -182,23 +187,18 @@ New look and the name "Poker Performance Analytics", after accounts and history 
 
 ## 6. Build order
 
-1. Copy for Claude (5.1): small, useful straight away
-2. Hand-reading quiz (5.4): targets the main leak, and needs only showdown hands
-3. Equity calculator (5.2), then all-in EV (5.3)
-4. Saved history in the browser, rolling stats, stack-depth breakdown (5.5)
-5. Range model (5.6)
-6. Push/fold checks (5.7)
-7. Configurable targets and more flags (5.9)
-8. Drill mode and review queue (5.8)
-9. Opponent database (5.10)
-10. Bluff analysis (5.11)
-11. Cloud history (5.12)
-12. Play-quality score (5.13)
-13. AI discussion (5.14)
-14. Redesign (5.15)
+Done: login and account creation (PR #3), Copy for Claude (#5), collapsible load panel (#6), hand-reading quiz (#7),
+equity calculator and all-in EV (#9), saved history (#10), push/fold (#11), review queue and drills (#12), targets and
+more flags (#13), AI chat, switched off until set up (#14), range model.
 
-Done: login and account creation (Cognito hosted pages, PR #3), Copy for Claude (PR #5), collapsible load panel (PR
-#6), hand-reading quiz with category and range modes (PR #7), equity calculator and all-in EV.
+Remaining, in order:
+
+1. Bluff analysis (5.11)
+2. Play-quality score (5.13)
+3. Cloud history (5.12)
+4. Redesign (5.15)
+5. Opponent database (5.10), last: the owner isn't sure yet how to identify opponents beyond the IDs in the exports
+   (the IDs are stable across tournaments, so a database could key on them, with nicknames the owner adds).
 
 ## 7. Working agreement
 
@@ -245,3 +245,10 @@ Choices made while building without the owner present. Each can be changed; say 
   Server-side refusal fallbacks are on (`fallbacks: "default"`), so a declined request is retried on another model.
   The "full" Cognito group is created even while the chat is off. The Anthropic SDK is pinned to 1.3.0 (18 days old
   at the time) rather than the newest release.
+- **Range model (5.6):** default chart sizes: opens UTG 14%, UTG+1 16%, UTG+2 18%, MP 20%, MP+1 22%, HJ 25%, CO 30%,
+  BTN 45%, SB 40%; limp 50% minus the top 10%; call an open 21% minus the top 7%; big blind defend 45% minus the top 7%;
+  3-bet 7%; call a 3-bet 12% minus the top 3%; 4-bet 3%; big blind check 100% minus the top 10%. Hand strength order:
+  equity vs a random hand, +2.5% suited, +1.5% connected, −2% pairs. Postflop weights (strong / top pair / weaker pair /
+  draw / nothing): bet ≥60% pot 1/0.7/0.2/0.6/0.25, smaller bet 1/0.9/0.5/0.6/0.4, raise 1/0.5/0.1/0.5/0.2, call
+  0.6/1/0.8/1/0.15, check 0.5/0.8/1/0.9/1. Shoves use the same charts as raises. Equity is against the player whose bet
+  Hero called, even in multiway pots; 3,000 samples (about ±1%).
