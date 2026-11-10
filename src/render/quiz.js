@@ -25,10 +25,12 @@ import {
   scoreAnswer,
   summarizeAnswers,
 } from '../engine/quiz.js';
-import { ALL_CELLS, cellName, countLive, scoreRange } from '../engine/rangeGrid.js';
+import { ALL_CELLS, cellForHand, cellName, countLive, scoreRange } from '../engine/rangeGrid.js';
 import { bindCopyButton } from './clipboard.js';
 import { bindChatButton, chatButtonHtml } from './chatPanel.js';
 import { cardsToIconStr } from './format.js';
+import { rangeHeatmapHtml, villainRangeAt } from './rangeEquity.js';
+import { compareWithModel } from '../engine/rangeModel.js';
 
 const STREET_LABELS = { preflop: 'Preflop', flop: 'Flop', turn: 'Turn', river: 'River' };
 const LABELS = Object.fromEntries([...PREFLOP_CATEGORIES, ...POSTFLOP_CATEGORIES].map(c => [c.id, c.label]));
@@ -397,7 +399,8 @@ export function createQuizController(allHands) {
       nextButtonHtml(item) +
       skip +
       '</div>' +
-      copyRowHtml();
+      copyRowHtml() +
+      '<div class="quiz-model"></div>';
     if (last) h += finishedHtml(item, result);
     return h;
   }
@@ -558,6 +561,36 @@ export function createQuizController(allHands) {
     }
 
     if (item && st && answerType === 'advanced' && !result && isQuestion(st.street)) bindGrid(mount, item, st);
+    if (item && st && answerType === 'advanced' && result) fillModelComparison(mount, item, st);
+  }
+
+  // After an advanced answer: the range model's estimate for the same moment, with your painted
+  // cells outlined. Villain's real hand is only outlined after the last street, so nothing is
+  // given away early.
+  async function fillModelComparison(mount, item, st) {
+    const box = mount.querySelector('.quiz-model');
+    if (!box) return;
+    const model = await villainRangeAt(item.hand, st.street, item.villain);
+    if (!model || !box.isConnected) return;
+    const cmp = compareWithModel(cells, model.combos);
+    const last = streetIdx === item.streets.length - 1;
+    const actual = cellForHand(item.villainCards);
+    const inModel = model.weights[ALL_CELLS.indexOf(actual)];
+    box.innerHTML =
+      '<h3 class="breakdown-title">Compared with the range model</h3>' +
+      rangeHeatmapHtml(model.weights, { painted: cells, actual: last ? actual : null }) +
+      '<div class="caveat">Brighter cells: hands the model thinks more likely here (about ' +
+      Math.round(cmp.modelShare * 1000) / 10 +
+      '% of hands). Gold outlines: your range, which covers ' +
+      (cmp.coverage === null ? '–' : Math.round(cmp.coverage * 100) + '%') +
+      ' of the model’s estimate.' +
+      (last
+        ? ' Their actual hand (green) was ' +
+          (inModel > 0
+            ? 'in the model’s range at ' + Math.round(inModel * 100) + '% strength.'
+            : 'outside the model’s range.')
+        : '') +
+      ' The model is an estimate (Ranges tab), not the answer.</div>';
   }
 
   // Painting updates cells in place rather than redrawing, so a drag isn't interrupted.

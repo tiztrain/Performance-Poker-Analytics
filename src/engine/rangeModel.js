@@ -305,3 +305,55 @@ export function createRangeStore(storage) {
 }
 
 export { cellName };
+
+// Average weight per grid cell (0..1) of a combo list, for drawing a range on the 13×13 grid.
+// A cell's value is the mean weight of its still-possible combos, so a cell half-removed by the
+// narrowing shows half-strength.
+export function cellWeights(combos) {
+  const sum = new Float64Array(169);
+  const count = new Float64Array(169);
+  combos.forEach(c => {
+    const i = ALL_CELLS.indexOf(cellOf(c.cards));
+    sum[i] += c.w;
+    count[i] += 1;
+  });
+  return sum.map((s, i) => (count[i] ? s / count[i] : 0));
+}
+
+// The cell name for two specific cards (same as rangeGrid's cellForHand, kept local to avoid a
+// second import path).
+function cellOf(cards) {
+  const [x, y] = cards.map(c => c[0].toUpperCase());
+  if (x === y) return x + y;
+  const [hi, lo] = RANKS.indexOf(x) < RANKS.indexOf(y) ? [x, y] : [y, x];
+  return hi + lo + (cards[0][1] === cards[1][1] ? 's' : 'o');
+}
+
+// How a painted range (a Set of cell names) compares with the model's weighted combos:
+// - coverage: the share of the model's weight that falls inside the painted cells
+// - modelShare: the model range's size, as a share of all possible hands (weighted)
+export function compareWithModel(paintedCells, combos) {
+  const total = combos.reduce((t, c) => t + c.w, 0);
+  if (!total) return { coverage: null, modelShare: 0 };
+  let inside = 0;
+  combos.forEach(c => {
+    if (paintedCells.has(cellOf(c.cards))) inside += c.w;
+  });
+  return { coverage: inside / total, modelShare: total / 1326 };
+}
+
+// The opponent to show a range for at the end of a street: the last one who bet or raised on it,
+// else the first opponent still in the hand.
+export function mainVillain(hand, street) {
+  const streets = ['preflop', 'flop', 'turn', 'river'];
+  const folded = new Set();
+  for (const st of streets) {
+    hand.streets[st].forEach(a => a.action === 'fold' && folded.add(a.player));
+    if (st === street) break;
+  }
+  const acts = hand.streets[street];
+  const aggressor = [...acts].reverse().find(a => a.player !== 'Hero' && (a.action === 'bet' || a.action === 'raise'));
+  if (aggressor && !folded.has(aggressor.player)) return aggressor.player;
+  const still = hand.seats.map(s => s.name).find(n => n !== 'Hero' && !folded.has(n));
+  return still || null;
+}

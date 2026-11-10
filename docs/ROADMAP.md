@@ -106,8 +106,10 @@ comes from their last preflop action, then each postflop action re-weights holdi
 the hand detail shows "you had ~X% vs their estimated range" (green when above the equity needed), estimated by sampling
 when the hand is opened.
 
-- Next: show the estimated range on each hand's grid; use it in the advanced quiz; adjust ranges per opponent once the
-  opponent database exists.
+- **Done:** each hand's detail shows villain's estimated range as a heat map (brighter = more likely), one tab per
+  street, with their actual hand outlined if it was shown. The advanced quiz compares your painted range with the model
+  after you answer (the actual hand is shown only on the last street).
+- Next (optional): adjust ranges per opponent, only if the opponent database is ever built.
 
 ### 5.7 Push/fold checks
 
@@ -140,7 +142,10 @@ right, and after 1 day when wrong.
 - Next: estimated equity against a range next to the required equity, once the range model (5.6) exists; and calling
   off light at low SPR.
 
-### 5.10 Opponent database (owner's decision, see section 4)
+### 5.10 Opponent database (optional, not built)
+
+The owner's decision (2026-11-10): keep this optional and don't build it for now, because opponents only appear as IDs
+and there's no easy way to get their names. If built, it comes last.
 
 Private notes and stats per opponent (hands seen, VPIP (voluntarily put money in pot), PFR (preflop raise), 3-bet,
 fold to c-bet (continuation bet), showdowns, tags), each with sample size and confidence. Shown only in post-session
@@ -284,3 +289,6 @@ Choices made while building without the owner present. Each can be changed; say 
 - **Redesign (5.15):** four-colour deck (hearts red, diamonds blue, clubs green, spades black) on white cards, for
   quicker suit reading; grouping: Results = stats, day comparison, all-in EV, play quality; Study = review queue, quiz,
   bluffs, push/fold; Settings = ranges, targets. The repository and package keep their names.
+- **Range views (5.6):** the hand detail shows the range of the opponent who bet or raised last on the chosen street
+  (else the first opponent still in), from the end of that street. The quiz comparison reports how much of the model's
+  weight your painted cells cover; it never grades you against the model.
