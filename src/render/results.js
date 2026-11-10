@@ -16,6 +16,7 @@ import { createReviewQueueController } from './reviewQueueView.js';
 import { createRangesController } from './rangesView.js';
 import { createBluffsController } from './bluffsView.js';
 import { createQualityController } from './qualityView.js';
+import { bindTargetEditors, targetsPageHtml } from './statGrid.js';
 
 export function renderResults(allHands) {
   const container = document.getElementById('results');
@@ -59,8 +60,42 @@ export function renderResults(allHands) {
   // past midnight stays together under the day it started rather than splitting across dates.
   let selectedDayDates = new Set(allDates);
 
+  // Views are grouped into three sections; each remembers the view last used in it.
+  const GROUPS = [
+    { id: 'results', label: 'Results' },
+    { id: 'study', label: 'Study' },
+    { id: 'settings', label: 'Settings' },
+  ];
+  const lastInGroup = { results: 'filter', study: 'review', settings: 'ranges' };
+  function viewsInGroup(group) {
+    const multiDay = allDates.length > 1;
+    if (group === 'results') {
+      return [
+        ['filter', multiDay ? 'Filter by date' : 'Stats and hands'],
+        ...(multiDay ? [['daycompare', 'Day comparison']] : []),
+        ['allin', 'All-in EV (' + allIns.spotCount + ')'],
+        ['quality', 'Play quality'],
+      ];
+    }
+    if (group === 'study') {
+      return [
+        ['review', 'Review queue'],
+        ['quiz', 'Hand-reading quiz (' + quiz.itemCount + ')'],
+        ['bluffs', 'Bluffs'],
+        ['pushfold', 'Push/fold (' + pushFold.spotCount + ')'],
+      ];
+    }
+    return [
+      ['ranges', 'Ranges'],
+      ['targets', 'Targets'],
+    ];
+  }
+  const groupOf = view => GROUPS.find(g => viewsInGroup(g.id).some(([v]) => v === view)).id;
+
   function viewToggleHtml() {
-    const tab = (view, label) =>
+    const current = groupOf(activeView);
+    lastInGroup[current] = activeView;
+    const tab = ([view, label]) =>
       '<button class="filter-btn view-tab' +
       (activeView === view ? ' active' : '') +
       '" data-view="' +
@@ -68,23 +103,24 @@ export function renderResults(allHands) {
       '">' +
       label +
       '</button>';
-    const multiDay = allDates.length > 1;
     return (
-      '<div class="panel"><div class="filter-row">' +
-      tab('filter', multiDay ? 'Filter by date' : 'Stats and hands') +
-      (multiDay ? tab('daycompare', 'Day comparison') : '') +
-      tab('quiz', 'Hand-reading quiz (' + quiz.itemCount + ')') +
-      tab('allin', 'All-in EV (' + allIns.spotCount + ')') +
-      tab('pushfold', 'Push/fold (' + pushFold.spotCount + ')') +
-      tab('review', 'Review queue') +
-      tab('bluffs', 'Bluffs') +
-      tab('quality', 'Play quality') +
-      tab('ranges', 'Ranges') +
+      '<div class="panel"><nav class="nav-groups" aria-label="Sections">' +
+      GROUPS.map(
+        g =>
+          '<button class="nav-group' +
+          (g.id === current ? ' active' : '') +
+          '" data-group="' +
+          g.id +
+          '">' +
+          g.label +
+          '</button>',
+      ).join('') +
+      '</nav><div class="filter-row">' +
+      viewsInGroup(current).map(tab).join('') +
       '</div></div>'
     );
   }
 
-  // Tournaments limited to the hands inside the last-N window (tournaments with none drop out).
   function windowGroups() {
     if (!handWindow || handWindow >= allHands.length) return allGroups;
     if (windowCache.n !== handWindow) {
@@ -220,6 +256,12 @@ export function renderResults(allHands) {
   }
 
   function rerender() {
+    if (activeView === 'targets') {
+      container.innerHTML = viewToggleHtml() + '<div id="targets-mount">' + targetsPageHtml() + '</div>';
+      bindTargetEditors(document.getElementById('targets-mount'));
+      bindBars();
+      return;
+    }
     if (activeView === 'quality') {
       container.innerHTML = viewToggleHtml() + '<div id="quality-mount"></div>';
       quality.render(document.getElementById('quality-mount'));
@@ -326,6 +368,14 @@ export function renderResults(allHands) {
   }
 
   function bindBars() {
+    container.querySelectorAll('.nav-group').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = lastInGroup[btn.dataset.group];
+        if (target === activeView) return;
+        activeView = target;
+        rerender();
+      });
+    });
     container.querySelectorAll('.window-tab').forEach(btn => {
       btn.addEventListener('click', () => {
         handWindow = Number(btn.dataset.window);

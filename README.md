@@ -1,10 +1,17 @@
-# Poker Hand Review
+# Poker Performance Analytics
 
-A client-side tool for analyzing CoinPoker tournament hand histories: paste or drop
-hand-history text files in, get frequency stats (VPIP, PFR, 3-bet, c-bet, WTSD and
-more), a per-hand table with table positions (UTG/HJ/CO/BTN/SB/BB), a stack-impact
-chart, and a day-by-day comparison across sessions. Everything is computed and
-rendered in the browser, and hand histories are never uploaded anywhere.
+A post-session training tool for CoinPoker tournament players: load your hand
+histories and get your real frequencies, the spots worth studying, and practice to fix
+them. The app is organised in three sections:
+
+- **Results:** stats with confidence ranges and targets, the hand table with flags, a
+  day-by-day comparison, all-in EV and a play-quality score.
+- **Study:** a ranked review queue with spaced-repetition drills, a hand-reading quiz,
+  bluff analysis and push/fold checks.
+- **Settings:** the range charts behind the estimates, and stat targets.
+
+Everything is computed in the browser and hands are saved there. Optional extras
+(login, cloud history, an AI chat) need the AWS setup in `infra/`.
 
 Live: <https://d168sqg7uqysns.cloudfront.net>
 

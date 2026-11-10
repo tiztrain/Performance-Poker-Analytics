@@ -46,15 +46,13 @@ export function sumNetStr(hands) {
   return { str: (total >= 0 ? '+' : '') + total.toFixed(2) + 'bb', cls: total > 0 ? 'good' : total < 0 ? 'leak' : '' };
 }
 
-export const SUIT_COLORS = { h: 'var(--suit-h)', d: 'var(--suit-d)', c: 'var(--suit-c)', s: 'var(--suit-s)' };
-
+// A card as a small white playing card (styled by .pcard in index.html, four-colour deck).
 export function cardToIcon(cardStr) {
   const rank = cardStr[0];
   const suit = cardStr[1].toLowerCase();
   const suitMap = { h: '♥', d: '♦', c: '♣', s: '♠' };
   const icon = suitMap[suit] || suit;
-  const color = SUIT_COLORS[suit] || 'var(--text-primary)';
-  return '<span style="color:' + color + ';">' + rank + icon + '</span>';
+  return '<span class="pcard ' + (suitMap[suit] ? suit : '') + '">' + rank + icon + '</span>';
 }
 
 export function cardsToIconStr(cardsArr) {
