@@ -1,6 +1,7 @@
 // ---------- Stats aggregation (Hero-focused) ----------
 import { parseCard, bestHand } from './cards.js';
 import { detectPreflopRace } from './races.js';
+import { moreFlags } from './moreFlags.js';
 
 export function computeStats(hands) {
   const s = {
@@ -174,6 +175,9 @@ export function computeStats(hands) {
       });
     });
   });
+
+  // Missed value, raise-fold, committed folds and sizing (engine/moreFlags.js).
+  Object.assign(s, moreFlags(hands));
 
   function pct(n, d) {
     return d > 0 ? ((n / d) * 100).toFixed(1) : null;

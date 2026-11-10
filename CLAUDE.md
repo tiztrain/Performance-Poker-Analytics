@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Client-side analyzer for CoinPoker tournament hand histories: vanilla JS (no framework, no TypeScript) built with Vite.
 There is no backend of our own. Loaded hands are saved in the browser's IndexedDB (`render/historyStore.js`, raw text
-re-parsed on load by `engine/history.js`); quiz scores and settings, and review-queue marks and drill schedules, use `localStorage`. Optional login uses Amazon
+re-parsed on load by `engine/history.js`); quiz scores and settings, review-queue marks and drill schedules, and stat target overrides use `localStorage`. Optional login uses Amazon
 Cognito's hosted pages (phase 2); saving hand histories to an account is not built yet. See `README.md` for user-facing behavior and the bug case studies,
 `infra/README.md` for the AWS setup, and `docs/ROADMAP.md` for planned features and their build order.
 
@@ -83,8 +83,8 @@ Data flows one way:
 - **`index.html`** contains all the CSS, inline in a `<style>` block, including the color variables the render code
   references. There are no separate stylesheets.
 
-Two files are named `format.js`: `engine/format.js` classifies tournament formats and holds benchmark targets;
-`render/format.js` formats money and cards.
+Two files are named `format.js`: `engine/format.js` classifies tournament formats; `render/format.js` formats money and
+cards. Stat targets live in `engine/targets.js`.
 
 ## Domain invariants
 
@@ -93,8 +93,8 @@ These encode real bugs or deliberate decisions; `tests/grouping.test.js` pins th
 - **Group tournaments by name and ID** (`name::tourneyId`). CoinPoker reuses display names for recurring tournaments.
 - **Order hands by timestamp** using `handSortKey`, never by hand ID. IDs are not reliably chronological.
 - **Bucket dates by tournament start** (`groupStartDate`), so a tournament that runs past midnight stays in one day.
-- **Never blend stats across formats.** Regular, turbo, hyper and satellite each get their own stat panel; `getTargets`
-  deliberately has no numeric benchmarks for hyper and satellite.
+- **Never blend stats across formats.** Regular, turbo, hyper and satellite each get their own stat panel with its own
+  targets (`engine/targets.js`). Turbo and hyper defaults are labelled estimates; satellite deliberately has none.
 - **Sum bb results per hand** using each hand's own `heroNetBB`, because blind levels change during a tournament.
 - **Keep flags framed as review prompts.** `engine/equity.js` computes equity only when every hand is known (all-in
   EV); there is no solver and no model of villain's range, so hand-strength flags and `detectPreflopRace` are
