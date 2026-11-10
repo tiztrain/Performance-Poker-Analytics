@@ -17,7 +17,13 @@ export function createQualityController(allHands) {
   let working = false;
   let openKey = null;
 
-  async function compute(update) {
+  // Several views (this tab and Trends) can wait on the same work; each gets progress updates.
+  // Keyed by caller, so each redraw replaces its own listener instead of piling up; notify works on
+  // a copy, because a listener redraws and registers again while it runs.
+  const listeners = new Map();
+  const notify = () => [...listeners.values()].forEach(fn => fn());
+  async function compute(update, caller = 'quality') {
+    listeners.set(caller, update);
     if (working) return;
     working = true;
     const ranges = await currentRanges();
@@ -29,12 +35,13 @@ export function createQualityController(allHands) {
       map.set(h.id, mistakesForHand(h, ranges, { pushFold, bets: analyseBets(h, ranges) }));
       if (i % 20 === 19) {
         progress = i + 1;
-        update();
+        notify();
         await new Promise(r => setTimeout(r, 0));
       }
     }
     mistakesById = map;
-    update();
+    notify();
+    listeners.clear();
   }
 
   function scoreCards(s, title) {
@@ -139,5 +146,6 @@ export function createQualityController(allHands) {
     );
   }
 
-  return { render };
+  // For the Trends tab: the mistakes once worked out (else null), and a way to start the work.
+  return { render, mistakes: () => mistakesById, progress: () => progress, compute };
 }

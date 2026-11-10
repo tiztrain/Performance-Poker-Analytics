@@ -141,6 +141,11 @@ infrastructure-as-code for hosting.
   short), across your history and per tournament, with your last 10 tournaments against
   your average and each tournament's costliest decisions. Lower is better, and it judges
   decisions, never results.
+- **Trends:** the **Trends** tab (under Results) charts your history over time: play
+  quality per tournament and over your last 5, all-in luck (expected against actual
+  results), quiz accuracy over your last 20 answers per mode, and any key stat per
+  format with its target range shaded. Hover a point for details, or open each chart
+  as a table.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 

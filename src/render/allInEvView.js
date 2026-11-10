@@ -142,5 +142,5 @@ export function createAllInController(allHands) {
     mount.innerHTML = h;
   }
 
-  return { render, spotCount: spots.length };
+  return { render, spotCount: spots.length, results: () => compute().results };
 }

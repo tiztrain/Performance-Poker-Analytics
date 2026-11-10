@@ -95,7 +95,8 @@ hand ID, and merged into the history the app opens on. Stats cards show a 95% co
 sample size; each stat panel has a collapsible breakdown by stack depth (effective stack under 10, 10–20, 20–40, 40+
 big blinds) and by position; a last-1,000 / last-5,000 window appears once more than 1,000 hands are saved.
 
-- Next: notes per hand, and luck and quiz trends over time.
+- Luck and quiz trends over time: **done** (Trends tab, 5.16).
+- Next: notes per hand.
 - Cloud storage tied to the account comes later (5.12).
 
 ### 5.6 Range model
@@ -181,7 +182,8 @@ losing bluffs in weak spots. Shown across saved history and per tournament, in b
 hands, split by stage (deep 40bb+, middle 15–40bb, short under 15bb), with the last 10 tournaments against the long-run
 average and each tournament's three costliest decisions. No 1–10 rating (owner's choice).
 
-- Next: "best decisions" alongside the costliest; a chart of the trend over time.
+- The trend over time is charted in the Trends tab (5.16).
+- Next: "best decisions" alongside the costliest.
 
 ### 5.14 In-app AI discussion
 
@@ -203,20 +205,28 @@ accents, a soft spotlight); cards drawn as white playing cards in a four-colour 
 sections (Results, Study, Settings), each remembering the view last used. Settings gains a Targets page with every
 format's target editor.
 
+### 5.16 Trends over time
+
+**Done:** a **Trends** tab under Results (`engine/trends.js`, `render/trendChart.js`) with four charts, oldest on the
+left, each with a hover tooltip and a table view:
+
+- Play quality: bb lost to mistakes per 100 hands per tournament (dots), and pooled over the last 5 tournaments (line).
+- All-in luck: running totals of expected and actual all-in results in bb; the gap is luck.
+- Quiz accuracy: the average score of the last 20 answers after each answer, one quiz mode at a time.
+- Key stats: any target stat per tournament and over the last 5, one format at a time, with the target range shaded.
+
 ## 6. Build order
 
 Done: login and account creation (PR #3), Copy for Claude (#5), collapsible load panel (#6), hand-reading quiz (#7),
 equity calculator and all-in EV (#9), saved history (#10), push/fold (#11), review queue and drills (#12), targets and
-more flags (#13), AI chat, switched off until set up (#14), range model.
+more flags (#13), AI chat, switched off until set up (#14), range model (#15), bluff analysis (#16), play quality (#17),
+cloud history (#18), redesign (#19), range views (#20), trends.
 
 Remaining, in order:
 
-1. Bluff analysis (5.11)
-2. Play-quality score (5.13)
-3. Cloud history (5.12)
-4. Redesign (5.15)
-5. Opponent database (5.10), last: the owner isn't sure yet how to identify opponents beyond the IDs in the exports
-   (the IDs are stable across tournaments, so a database could key on them, with nicknames the owner adds).
+1. ICM (Independent Chip Model: turns chip stacks into prize-money equity) with payouts pasted from the lobby, using
+   the players at the table as the field; push/fold checks become ICM-aware.
+2. Opponent database (5.10): optional and not built, by the owner's choice; it would come last.
 
 ## 7. Working agreement
 
@@ -292,3 +302,6 @@ Choices made while building without the owner present. Each can be changed; say 
 - **Range views (5.6):** the hand detail shows the range of the opponent who bet or raised last on the chosen street
   (else the first opponent still in), from the end of that street. The quiz comparison reports how much of the model's
   weight your painted cells cover; it never grades you against the model.
+- **Trends (5.16):** tournament charts use rolling windows of 5 tournaments, pooling their hands (so a short tournament
+  weighs less) rather than averaging tournament values; quiz accuracy uses the last 20 answers. Play quality mixes
+  formats (as its own tab does); stat trends never do. The luck chart's x-axis is all-in number, not date.
