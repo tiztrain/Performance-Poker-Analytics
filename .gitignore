@@ -33,3 +33,6 @@ crash.log
 crash.*.log
 # infra/.terraform.lock.hcl is intentionally NOT ignored - it pins provider
 # versions and should be committed.
+
+# AI chat Lambda bundle, built by `npm run build:chat`
+infra/build/

@@ -85,6 +85,50 @@ Cognito sends verification emails itself, which is limited to 50 a day. If the s
 uses a custom domain, `apply` again after changing `domain_name` so the allowed
 redirect URLs follow.
 
+### Turning on the AI chat
+
+The **Discuss with Claude** chat needs a small backend (`chat.tf`): API Gateway checks the
+Cognito login, a Lambda function enforces the limits and calls Claude, DynamoDB counts
+messages and spend, SSM Parameter Store holds the API key (encrypted), and SNS emails you
+budget alerts. At personal-use volumes the AWS side stays within free tiers; the cost is the
+Claude usage itself, capped by the budget below. It's off until you switch it on:
+
+1. **Create an API key** in the [Anthropic Console](https://console.anthropic.com/) (API
+   Keys). Under Limits, set a monthly spend limit of $10 on its workspace. That's the hard
+   backstop: the API stops answering when it's reached, whatever the app does.
+2. **Build the Lambda code**, from the project folder:
+   ```powershell
+   npm install
+   npm run build:chat
+   ```
+   This creates `infra/build/chat-lambda.zip` (not committed).
+3. **Switch it on** in `infra/terraform.tfvars`:
+   ```hcl
+   enable_chat = true
+   alert_email = "you@example.com" # budget alerts at 50%, 80% and 100%
+   ```
+   Optional: `chat_model`, `chat_monthly_budget_usd` (default 10), `chat_free_daily_limit`
+   (default 3) and `chat_full_daily_limit` (default 30).
+4. **Apply**, from `infra/`: `terraform plan`, check it only adds chat resources, then
+   `terraform apply`. AWS emails `alert_email` a confirmation link: click it, or alerts
+   won't arrive.
+5. **Store the key** (it never goes in Terraform state or the repo):
+   ```powershell
+   aws ssm put-parameter --name (terraform output -raw chat_key_parameter) --type SecureString --overwrite --value "sk-ant-..."
+   ```
+6. **Give yourself the full tier** (everyone else who signs up is on the free tier):
+   ```powershell
+   aws cognito-idp admin-add-user-to-group --user-pool-id (terraform output -raw cognito_user_pool_id) --username you@example.com --group-name full
+   ```
+   Sign out and back in afterwards, so your login token includes the group.
+7. **Point the site at it:** add the repository variable `CHAT_API_URL` with the value of
+   `terraform output -raw chat_api_url`, then run the **Deploy** workflow. For local dev, put
+   the same value in `.env.local` as `VITE_CHAT_API_URL`.
+
+The budget in the app is an estimate from token counts reported by the API; the Console
+spend limit is what actually stops charges. After changing the chat code, run
+`npm run build:chat` and `terraform apply` again to redeploy it.
+
 ## Notes / things worth knowing
 
 - **State is local** (a `terraform.tfstate` file in this directory, gitignored). Fine

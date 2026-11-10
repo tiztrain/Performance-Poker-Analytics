@@ -165,10 +165,16 @@ all-in EV, flag costs), with a breakdown, the best and costliest decisions, and 
 
 ### 5.14 In-app AI discussion
 
-The owner wants this inside the app eventually, starting from the quiz's and hand table's Copy for Claude text.
+**Built, off until the owner switches it on** (steps in `infra/README.md`). A **Discuss with Claude** button next to
+every Copy for Claude button (hand table, quiz answers, review-queue drills) opens a side panel. The hand text goes to
+our own API (`backend/chat`, `infra/chat.tf`): API Gateway verifies the Cognito token, a Lambda enforces daily limits
+(free 3, "full" group 30) and a $10 monthly budget with email alerts at 50/80/100%, and calls Claude Opus 5.5 with the
+hand cached in the system prompt and server-side refusal fallbacks on. The key lives in SSM Parameter Store.
 
-Chat about a hand, preloaded with the 5.1 context plus your notes and stats. Needs a serverless backend holding the API
-key, login, rate limits and a monthly spend cap.
+- Next: a self-hosted model (Ollama on the owner's home-lab machine) as a second provider behind `CHAT_PROVIDER`. It
+  needs the machine reachable from AWS (a tunnel) and will reason less well than Opus about poker; test it against
+  the same hands before switching.
+- Later: include the player's notes and stats in the context; save conversations.
 
 ### 5.15 Poker-themed redesign
 
@@ -233,3 +239,9 @@ Choices made while building without the owner present. Each can be changed; say 
   allows a margin of a quarter of the range's width (at least 3 points) before "leak". Raise-fold needs 20% of the
   stack in on the street; committed fold needs a third of the stack in. New review-queue weights: raise-fold and
   committed fold 1 × chips in, missed value 0.5 × pot, sizing 0.2 × bet.
+- **AI chat (5.14):** Opus 5.5 at low effort (keeps answers inside API Gateway's 30-second limit; chat-style review
+  does well at low effort), max 2,000 output tokens per reply. Free tier 3 messages a day, "full" group 30, $10
+  monthly budget estimated from token usage (the Console spend limit is the hard stop). Conversations aren't saved.
+  Server-side refusal fallbacks are on (`fallbacks: "default"`), so a declined request is retried on another model.
+  The "full" Cognito group is created even while the chat is off. The Anthropic SDK is pinned to 1.3.0 (18 days old
+  at the time) rather than the newest release.

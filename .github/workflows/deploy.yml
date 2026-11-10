@@ -47,6 +47,7 @@ jobs:
         env:
           VITE_COGNITO_DOMAIN: ${{ vars.COGNITO_DOMAIN }}
           VITE_COGNITO_CLIENT_ID: ${{ vars.COGNITO_CLIENT_ID }}
+          VITE_CHAT_API_URL: ${{ vars.CHAT_API_URL }}
 
       - name: Configure AWS credentials (OIDC)
         uses: aws-actions/configure-aws-credentials@v6

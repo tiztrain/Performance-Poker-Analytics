@@ -202,6 +202,106 @@
         font-size: 11px;
         margin-left: 4px;
       }
+      .chat-btn {
+        background: var(--accent-gold);
+        border: 1px solid var(--accent-gold);
+        border-radius: 8px;
+        color: #1a1408;
+        padding: 6px 12px;
+        font-size: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        font-family: var(--sans);
+      }
+      .chat-panel {
+        position: fixed;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        width: min(440px, 100vw);
+        background: var(--bg-panel);
+        border-left: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 50;
+        box-shadow: -8px 0 24px rgba(0, 0, 0, 0.4);
+      }
+      .chat-head {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--border);
+      }
+      .chat-title {
+        color: var(--text-muted);
+        font-size: 12px;
+        flex: 1;
+      }
+      .chat-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        font-size: 22px;
+        cursor: pointer;
+      }
+      .chat-log {
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .chat-msg {
+        padding: 10px 12px;
+        border-radius: 8px;
+        font-size: 13.5px;
+        line-height: 1.5;
+      }
+      .chat-msg p {
+        margin: 0 0 8px;
+      }
+      .chat-msg p:last-child {
+        margin-bottom: 0;
+      }
+      .chat-msg.user {
+        background: var(--bg-hover);
+        align-self: flex-end;
+        max-width: 85%;
+      }
+      .chat-msg.assistant {
+        background: var(--bg-panel-2);
+        border: 1px solid var(--border);
+      }
+      .chat-msg.note {
+        color: var(--text-muted);
+      }
+      .chat-status {
+        padding: 0 16px;
+        min-height: 18px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .chat-form {
+        display: flex;
+        gap: 8px;
+        padding: 10px 16px 16px;
+        align-items: flex-end;
+      }
+      .chat-form[hidden] {
+        display: none;
+      }
+      .chat-input {
+        min-height: 60px;
+        flex: 1;
+        font-family: var(--sans);
+        font-size: 13.5px;
+      }
+      .chat-form .primary {
+        width: auto;
+        margin: 0;
+      }
       .quiz-intro {
         color: var(--text-muted);
         font-size: 13px;

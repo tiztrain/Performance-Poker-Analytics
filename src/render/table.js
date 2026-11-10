@@ -16,6 +16,7 @@ import {
 } from './format.js';
 import { renderImpactChart } from './chart.js';
 import { bindCopyButton } from './clipboard.js';
+import { bindChatButton, chatButtonHtml } from './chatPanel.js';
 import { bindTargetEditors, statGridHtml } from './statGrid.js';
 import { requiredEquity } from '../engine/moreFlags.js';
 
@@ -347,11 +348,14 @@ export function bindChartAndTable(hands, mountEl) {
       }
       detailHtml +=
         '<div class="copy-row"><button class="copy-claude-btn" type="button">Copy for Claude</button>' +
+        chatButtonHtml() +
         '<span class="copy-hint">Copies this hand as text to paste into a chat. Opponents are renamed Villain 1, 2…</span></div>';
       detailHtml += '</div></td>';
       detail.innerHTML = detailHtml;
       tbody.appendChild(detail);
-      bindCopyButton(detail, () => handToClaudeText(h, flagReasonsForHand(s.raw, h.id)));
+      const handText = () => handToClaudeText(h, flagReasonsForHand(s.raw, h.id));
+      bindCopyButton(detail, handText);
+      bindChatButton(detail, handText, 'Hand #' + h.id);
 
       row.addEventListener('click', () => detail.classList.toggle('open'));
     });
