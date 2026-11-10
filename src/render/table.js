@@ -16,7 +16,8 @@ import {
 } from './format.js';
 import { renderImpactChart } from './chart.js';
 import { bindCopyButton } from './clipboard.js';
-import { statGridHtml } from './statGrid.js';
+import { bindTargetEditors, statGridHtml } from './statGrid.js';
+import { requiredEquity } from '../engine/moreFlags.js';
 
 export function chartAndTableSkeletonHtml(showChart) {
   // The chart's bar heights always stay bb-normalized (a fair "impact" comparison across
@@ -41,6 +42,10 @@ export function chartAndTableSkeletonHtml(showChart) {
     '<button class="filter-btn" data-filter="cheapfold">Flagged folds</button>' +
     '<button class="filter-btn" data-filter="missed3b">Missed 3-bet spots</button>' +
     '<button class="filter-btn" data-filter="race">Coin flips / races</button>' +
+    '<button class="filter-btn" data-filter="missedvalue">Missed value</button>' +
+    '<button class="filter-btn" data-filter="raisefold">Raise-fold</button>' +
+    '<button class="filter-btn" data-filter="committed">Committed folds</button>' +
+    '<button class="filter-btn" data-filter="sizing">Unusual bet sizes</button>' +
     '</div><div id="filter-desc" style="font-size:12px;color:var(--text-muted);margin-bottom:10px;display:none;"></div>' +
     // .table-scroll lets the table scroll sideways inside its panel on narrow phones,
     // instead of making the whole page scroll.
@@ -66,6 +71,14 @@ export function bindChartAndTable(hands, mountEl) {
   const cheapFoldMap = new Map(s.raw.cheapFolds.map(b => [b.handId, b]));
   const missed3bMap = new Map(s.raw.threeBetOppsMissed.map(b => [b.handId, b]));
   const raceMap = new Map(s.raw.preflopRaces.map(b => [b.handId, b]));
+  const missedValueMap = new Map(s.raw.missedValue.map(b => [b.handId, b]));
+  const raiseFoldMap = new Map(s.raw.raiseFolds.map(b => [b.handId, b]));
+  const committedMap = new Map(s.raw.committedFolds.map(b => [b.handId, b]));
+  const sizingMap = new Map();
+  s.raw.sizing.forEach(b => {
+    if (!sizingMap.has(b.handId)) sizingMap.set(b.handId, []);
+    sizingMap.get(b.handId).push(b);
+  });
   const tbody = mountEl.querySelector('.hand-tbody');
   const filterDescEl = mountEl.querySelector('#filter-desc');
 
@@ -79,6 +92,14 @@ export function bindChartAndTable(hands, mountEl) {
       'Hands where you called an opening raise instead of re-raising — a frequency flag on your 3-bet rate, not a judgment that 3-betting was correct here.',
     race: 'Hands where you committed most of your stack preflop with no further decisions, and it showed down as either a genuine ~50/50 coinflip (pair vs. two live overcards) or your pair running into a bigger shown pair (~80/20, not really a flip but the same "was this needed" question) — flagged regardless of whether you won or lost it, since the point is reviewing the decision to get stacks in, not the result.',
     showdown: "Hands that reached a genuine showdown (didn't end by everyone else folding).",
+    missedvalue:
+      'River spots where you held two pair or better with your own cards and either checked it down or bet under a third of the pot. Sometimes checking is right (a scary board, a very passive opponent), so these are prompts to review.',
+    raisefold:
+      'You raised, then folded to a re-raise on the same street, after putting in 20% or more of your starting stack. Worth checking whether the first raise or the fold was the mistake.',
+    committed:
+      'You folded after already putting in a third or more of your starting stack. With that much in, the pot odds often make calling better than folding.',
+    sizing:
+      'Bets or raises after the flop under 25% or over 150% of the pot (all-ins excluded). Unusual sizes can be right, but are worth a look.',
   };
 
   function goToHand(handId) {
@@ -119,6 +140,10 @@ export function bindChartAndTable(hands, mountEl) {
       if (filter === 'cheapfold' && !cheapFoldMap.has(h.id)) return;
       if (filter === 'missed3b' && !missed3bMap.has(h.id)) return;
       if (filter === 'race' && !raceMap.has(h.id)) return;
+      if (filter === 'missedvalue' && !missedValueMap.has(h.id)) return;
+      if (filter === 'raisefold' && !raiseFoldMap.has(h.id)) return;
+      if (filter === 'committed' && !committedMap.has(h.id)) return;
+      if (filter === 'sizing' && !sizingMap.has(h.id)) return;
 
       const board = [...h.board.flop];
       if (h.board.turn) board.push(h.board.turn);
@@ -162,7 +187,22 @@ export function bindChartAndTable(hands, mountEl) {
           ? ' <span class="tag win">cheap fold ' + cheapFoldMap.get(h.id).equityNeeded + '%</span>'
           : '') +
         (missed3bMap.has(h.id) ? ' <span class="tag win">3b spot?</span>' : '') +
-        (raceInfo ? ' <span class="tag info">' + raceTagText + '</span>' : '');
+        (raceInfo ? ' <span class="tag info">' + raceTagText + '</span>' : '') +
+        (missedValueMap.has(h.id) ? ' <span class="tag flag">missed value?</span>' : '') +
+        (raiseFoldMap.has(h.id)
+          ? ' <span class="tag flag">raise-fold ' + raiseFoldMap.get(h.id).pctStack + '%</span>'
+          : '') +
+        (committedMap.has(h.id)
+          ? ' <span class="tag flag">committed fold ' + committedMap.get(h.id).pctStack + '%</span>'
+          : '') +
+        (sizingMap.has(h.id)
+          ? ' <span class="tag info">sizing ' +
+            sizingMap
+              .get(h.id)
+              .map(b => b.pct + '%')
+              .join('/') +
+            '</span>'
+          : '');
 
       // A preflop fold with nothing flagged on it is the least interesting row on the page -
       // dim it so the hands actually worth looking at (flags, showdowns, later-street folds) stand out.
@@ -238,6 +278,17 @@ export function bindChartAndTable(hands, mountEl) {
           if (a.action === 'call' || a.action === 'bet') line += ' ' + toBB(a.amount);
           if (a.action === 'raise') line += ' to ' + toBB(a.to);
           if (a.allin) line += ' (all-in)';
+          // The equity each Hero call needed, and what each Hero fold facing a bet passed up.
+          if (a.player === 'Hero' && (a.action === 'call' || (a.action === 'fold' && a.toCall > 0))) {
+            const need = requiredEquity(a);
+            if (need !== null) {
+              line +=
+                ' <span class="req-eq">' +
+                (a.action === 'call' ? 'needed ' : 'calling needed ') +
+                Math.round(need * 100) +
+                '% equity</span>';
+            }
+          }
           detailHtml += '<div class="action-line">' + line + '</div>';
         });
         detailHtml += '</div>';
@@ -319,6 +370,7 @@ export function bindChartAndTable(hands, mountEl) {
 // Single-tournament (or single-group) view: one stat panel + shared chart/table
 export function renderStatsAndTable(hands, mountEl, format) {
   mountEl.innerHTML = statGridHtml(hands, format, false) + chartAndTableSkeletonHtml(true);
+  bindTargetEditors(mountEl);
   bindChartAndTable(hands, mountEl);
 }
 
@@ -362,5 +414,6 @@ export function renderCombined(hands, mountEl, selectedCount) {
   html += chartAndTableSkeletonHtml(selectedCount === 1);
   mountEl.innerHTML = html;
   mountEl.dataset.multi = selectedCount > 1 ? '1' : '0';
+  bindTargetEditors(mountEl);
   bindChartAndTable(sorted, mountEl);
 }

@@ -1,30 +1,44 @@
 import { computeStats } from '../engine/stats.js';
-import { getTargets, FORMAT_LABELS } from '../engine/format.js';
+import { FORMAT_LABELS } from '../engine/format.js';
+import { createTargetStore, effectiveTargets, gradeStat, rangeLabel, TARGET_STATS } from '../engine/targets.js';
+import { currentRerender } from '../state.js';
 import { wilsonRange } from '../engine/confidence.js';
 import { byPosition, byStackDepth } from '../engine/breakdowns.js';
 
 // ---------- Stat-grid panel (one per format) ----------
+// Targets come from engine/targets.js: defaults per format with the player's own ranges (saved in
+// this browser) on top. Turbo and hyper defaults are estimates and say so.
+const targetStore = createTargetStore(browserStorage());
+const openEditors = new Set(); // formats whose editor is open, so a redraw after saving keeps it open
+
+function browserStorage() {
+  try {
+    return window.localStorage;
+  } catch {
+    return null;
+  }
+}
+
 export function statGridHtml(hands, format, labelFormat) {
   const stats = computeStats(hands);
   const s = stats;
-  const targets = getTargets(format);
+  const overrides = targetStore.load();
+  const targets = effectiveTargets(format, overrides);
+  const custom = overrides[format] || {};
 
   function statValueOrNote(value) {
     return value !== null
       ? value + '%'
       : '<span style="font-size:12px;color:var(--text-faint);">no qualifying hands</span>';
   }
-  function targetLine(t) {
+  function targetLine(key) {
+    const t = targets[key];
     if (!t) return '';
-    if (t.min !== undefined) return '<div class="target">' + t.label + '</div>';
-    return '<div class="target" style="line-height:1.3;">' + t.label + '</div>';
+    const estimate = (format === 'turbo' || format === 'hyper') && !(key in custom) ? ' (estimate)' : '';
+    return '<div class="target">' + rangeLabel(t) + (key in custom ? ' (yours)' : estimate) + '</div>';
   }
-  function cls(value, t) {
-    if (!t || t.min === undefined || value === null) return '';
-    const v = parseFloat(value);
-    if (v >= t.min) return 'good';
-    if (v >= t.watch) return 'watch';
-    return 'leak';
+  function cls(value, key) {
+    return gradeStat(value, targets[key]);
   }
 
   const formatLabel =
@@ -42,11 +56,11 @@ export function statGridHtml(hands, format, labelFormat) {
     { label: 'VPIP', value: s.vpip, key: 'vpip' },
     { label: 'PFR', value: s.pfr, key: 'pfr' },
     { label: '3-BET', value: s.threeBet, key: 'threeBet' },
-    { label: '3-BET DEFENSE', value: s.threeBetDefense, t: targets.threeBetDefense, key: 'threeBetDefense' },
-    { label: 'FOLD TO 3-BET', value: s.foldToThreeBet, t: targets.foldToThreeBet, key: 'foldToThreeBet' },
+    { label: '3-BET DEFENSE', value: s.threeBetDefense, key: 'threeBetDefense' },
+    { label: 'FOLD TO 3-BET', value: s.foldToThreeBet, key: 'foldToThreeBet' },
     { label: 'C-BET', value: s.cbet, key: 'cbet' },
-    { label: 'FOLD TO C-BET', value: s.foldToCbet, t: targets.foldToCbet, key: 'foldToCbet' },
-    { label: 'CHECK-RAISE', value: s.checkRaise, t: targets.checkRaise, key: 'checkRaise' },
+    { label: 'FOLD TO C-BET', value: s.foldToCbet, key: 'foldToCbet' },
+    { label: 'CHECK-RAISE', value: s.checkRaise, key: 'checkRaise' },
     { label: 'WTSD', value: s.wtsd, key: 'wtsd' },
     { label: 'W$SD', value: s.wsd, key: 'wsd' },
     { label: 'AGGRESSION FACTOR', value: null, raw: s.aggressionFactor },
@@ -60,17 +74,17 @@ export function statGridHtml(hands, format, labelFormat) {
         : statValueOrNote(c.value);
     html +=
       '<div class="stat-card ' +
-      cls(c.value, c.t) +
+      (c.key ? cls(c.value, c.key) : '') +
       '"><div class="label">' +
       c.label +
       '</div><div class="value">' +
       display +
       '</div>' +
       rangeLine(c.key ? s.counts[c.key] : null) +
-      targetLine(c.t) +
+      (c.key ? targetLine(c.key) : '') +
       '</div>';
   });
-  html += '</div>' + breakdownHtml(hands) + '</div>';
+  html += '</div>' + breakdownHtml(hands) + targetEditorHtml(format, targets, custom) + '</div>';
   return html;
 }
 
@@ -140,4 +154,73 @@ function breakdownHtml(hands) {
     breakdownTableHtml('By position', byPosition(hands)) +
     '</details>'
   );
+}
+
+// Editor for this format's target ranges. Saving or resetting redraws the current view.
+function targetEditorHtml(format, targets, custom) {
+  let h =
+    '<details class="breakdowns target-editor" data-format="' +
+    format +
+    '"' +
+    (openEditors.has(format) ? ' open' : '') +
+    '><summary>Edit targets for ' +
+    FORMAT_LABELS[format].toLowerCase() +
+    ' tournaments</summary><div class="caveat">Set your own target range for each stat (0–100%). Leave both boxes ' +
+    'empty and save to use no target. Your ranges are saved in this browser.</div><div class="target-rows">';
+  TARGET_STATS.forEach(({ key, label }) => {
+    const t = targets[key];
+    h +=
+      '<div class="target-row" data-key="' +
+      key +
+      '"><span class="target-name">' +
+      label +
+      (key in custom ? ' <span class="target-yours">yours</span>' : '') +
+      '</span><input type="number" min="0" max="100" step="1" class="target-min" value="' +
+      (t ? t.min : '') +
+      '" aria-label="' +
+      label +
+      ' minimum"><span>–</span><input type="number" min="0" max="100" step="1" class="target-max" value="' +
+      (t ? t.max : '') +
+      '" aria-label="' +
+      label +
+      ' maximum"><span>%</span><button class="filter-btn" data-target-save="1">Save</button>' +
+      (key in custom ? '<button class="filter-btn" data-target-reset="1">Reset to default</button>' : '') +
+      '<span class="target-error"></span></div>';
+  });
+  return h + '</div><button class="filter-btn" data-target-reset-all="1">Reset all to defaults</button></details>';
+}
+
+// Called by the views after they insert stat panels.
+export function bindTargetEditors(root) {
+  const redraw = () => currentRerender && currentRerender();
+  root.querySelectorAll('.target-editor').forEach(ed => {
+    const format = ed.dataset.format;
+    ed.addEventListener('toggle', () => (ed.open ? openEditors.add(format) : openEditors.delete(format)));
+    ed.querySelectorAll('.target-row').forEach(row => {
+      const key = row.dataset.key;
+      row.querySelector('[data-target-save]').addEventListener('click', () => {
+        const minRaw = row.querySelector('.target-min').value;
+        const maxRaw = row.querySelector('.target-max').value;
+        if (minRaw === '' && maxRaw === '') {
+          targetStore.setOverride(format, key, null);
+          return redraw();
+        }
+        const ok = targetStore.setOverride(format, key, { min: Number(minRaw), max: Number(maxRaw) });
+        if (!ok)
+          row.querySelector('.target-error').textContent = 'Use 0–100, with the minimum no higher than the maximum.';
+        else redraw();
+      });
+      const reset = row.querySelector('[data-target-reset]');
+      if (reset) {
+        reset.addEventListener('click', () => {
+          targetStore.removeOverride(format, key);
+          redraw();
+        });
+      }
+    });
+    ed.querySelector('[data-target-reset-all]').addEventListener('click', () => {
+      targetStore.clearFormat(format);
+      redraw();
+    });
+  });
 }

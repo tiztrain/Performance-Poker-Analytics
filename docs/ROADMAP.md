@@ -122,13 +122,18 @@ right, and after 1 day when wrong.
 
 ### 5.9 More flags and columns
 
-- Configurable target stat ranges per format, with reset to default (rebuild from the earlier spec: `engine/targets.js`,
-  a settings panel, and defaults merged with your overrides).
-- Required-equity column next to each call, with estimated equity against the range model.
-- Missed value: strong hand checked back, or a very small bet relative to the pot.
-- Raise-fold: raising and then folding to a re-raise with a large investment.
-- Commitment: folding when pot-committed, or calling off light at low SPR.
-- Bet sizing as % of pot by street.
+**Done:**
+
+- Target ranges for every percentage stat, per format (`engine/targets.js`): defaults for regular (common tournament
+  ranges), turbo and hyper (estimates), none for satellite; an "Edit targets" panel under each stat grid saves your
+  own ranges in this browser, with reset per stat or for the whole format. Too high is graded like too low.
+- Required equity shown on every Hero call (and every fold facing a bet) in the hand detail.
+- New flags with hand-table filters and review-queue reasons (`engine/moreFlags.js`): missed value (two pair or better
+  with your own cards, river checked down or bet under 33% of the pot), raise-fold (20%+ of stack in on that street),
+  committed fold (a third or more of the stack in), and bet sizing (postflop bets or raises under 25% or over 150% of
+  the pot, all-ins excluded).
+- Next: estimated equity against a range next to the required equity, once the range model (5.6) exists; and calling
+  off light at low SPR.
 
 ### 5.10 Opponent database (owner's decision, see section 4)
 
@@ -224,3 +229,7 @@ Choices made while building without the owner present. Each can be changed; say 
   swing of 10bb+ 0.2 × swing. A hand's drill stops at its most important flagged decision (push/fold first, then
   expensive call, weak continue, cheap fold, missed 3-bet, race). Only push/fold drills are scored automatically;
   others are self-marked because there's no solver. Reviewed marks and drill schedules are kept in `localStorage`.
+- **Targets and flags (5.9):** turbo and hyper target defaults are estimates (labelled so on the cards); grading
+  allows a margin of a quarter of the range's width (at least 3 points) before "leak". Raise-fold needs 20% of the
+  stack in on the street; committed fold needs a third of the stack in. New review-queue weights: raise-fold and
+  committed fold 1 × chips in, missed value 0.5 × pot, sizing 0.2 × bet.

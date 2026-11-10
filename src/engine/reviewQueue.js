@@ -55,6 +55,53 @@ export function reasonsForHand(hand, raw, extras = {}) {
         weight: 0.5,
       }),
     );
+  (raw.missedValue || [])
+    .filter(f => f.handId === hand.id)
+    .forEach(f =>
+      reasons.push({
+        type: 'missedValue',
+        street: 'river',
+        label:
+          f.kind === 'checked'
+            ? 'Checked the river with two pair or better (missed value?)'
+            : `Bet only ${f.pct}% of the pot on the river with two pair or better`,
+        stake: f.pot / bb,
+        weight: 0.5,
+      }),
+    );
+  (raw.raiseFolds || [])
+    .filter(f => f.handId === hand.id)
+    .forEach(f =>
+      reasons.push({
+        type: 'raiseFold',
+        street: f.street,
+        label: `Raised, then folded to a re-raise on the ${f.street} (${f.pctStack}% of stack in)`,
+        stake: f.invested / bb,
+        weight: 1,
+      }),
+    );
+  (raw.committedFolds || [])
+    .filter(f => f.handId === hand.id)
+    .forEach(f =>
+      reasons.push({
+        type: 'committedFold',
+        street: f.street,
+        label: `Folded on the ${f.street} with ${f.pctStack}% of the stack already in`,
+        stake: f.invested / bb,
+        weight: 1,
+      }),
+    );
+  (raw.sizing || [])
+    .filter(f => f.handId === hand.id)
+    .forEach(f =>
+      reasons.push({
+        type: 'sizing',
+        street: f.street,
+        label: `${f.kind === 'small' ? 'Very small' : 'Very large'} ${f.street} bet: ${f.pct}% of the pot`,
+        stake: f.size / bb,
+        weight: 0.2,
+      }),
+    );
   if (raw.threeBetOppsMissed.some(f => f.handId === hand.id)) {
     const open = hand.streets.preflop.find(a => a.action === 'raise');
     reasons.push({
@@ -115,13 +162,28 @@ export function buildQueue(hands, raw, extras = {}) {
 
 // The decision a drill stops at: the first flagged Hero action, with the choices offered there.
 export function drillDecision(hand, reasons) {
-  const order = ['pushFold', 'bigCall', 'weakContinue', 'cheapFold', 'missed3b', 'race', 'allInSwing'];
+  const order = [
+    'pushFold',
+    'bigCall',
+    'weakContinue',
+    'committedFold',
+    'raiseFold',
+    'cheapFold',
+    'missedValue',
+    'sizing',
+    'missed3b',
+    'race',
+    'allInSwing',
+  ];
   const reason = order.map(t => reasons.find(r => r.type === t)).find(Boolean);
   if (!reason) return null;
   const street = reason.street;
   let action;
   if (reason.type === 'bigCall' || reason.type === 'weakContinue') action = heroAction(hand, street, ['call']);
-  else if (reason.type === 'cheapFold') action = heroAction(hand, street, ['fold']);
+  else if (reason.type === 'cheapFold' || reason.type === 'committedFold' || reason.type === 'raiseFold')
+    action = heroAction(hand, street, ['fold']);
+  else if (reason.type === 'missedValue' || reason.type === 'sizing')
+    action = heroAction(hand, street, ['check', 'bet', 'raise']);
   else action = heroAction(hand, street, ['fold', 'call', 'raise', 'bet', 'check']);
   if (!action) return null;
   const index = hand.streets[street].indexOf(action);

@@ -46,9 +46,16 @@ infrastructure-as-code for hosting.
 - **Breakdown by stack depth and position:** under each stat panel, VPIP, PFR, 3-bet,
   fold to 3-bet, c-bet, WTSD and bb won split by effective stack (under 10, 10–20,
   20–40 and 40+ big blinds) and by your seat.
-- **Benchmarks:** regular and turbo panels color-code 3-bet defense, fold to 3-bet,
-  fold to c-bet and check-raise against target ranges. Hyper and satellite panels show
-  a note instead, since those fixed targets don't apply there.
+- **Targets:** every stat card is graded against a target range for its format: green
+  inside it, gold just outside, red well outside (too high counts as much as too low).
+  Regular uses common tournament ranges; turbo and hyper are estimates and say so;
+  satellites have none. **Edit targets** under each stat panel sets your own ranges,
+  saved in this browser.
+- **More flags:** missed value (two pair or better checked down on the river, or bet
+  under a third of the pot), raise-fold (raising, then folding to a re-raise with 20%+
+  of your stack in), committed folds (folding with a third or more of your stack in)
+  and unusual bet sizes (under 25% or over 150% of the pot after the flop), each with a
+  hand-table filter. Every call in the hand detail shows the equity it needed.
 - **Copy for Claude:** open any hand and click **Copy for Claude** to copy it as text for
   a chat with an AI. It includes positions, stacks and every action in big blinds, bet
   sizes as % of pot, the equity each of your calls needed, SPR (stack-to-pot ratio) on
