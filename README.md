@@ -109,6 +109,11 @@ infrastructure-as-code for hosting.
   button opens a chat about that hand inside the app. You need to be signed in; free
   accounts get 3 messages a day. The hand is sent to the app's own API, not straight
   to Anthropic from your browser, and opponents are still anonymised.
+- **Range model:** each of your calls in the hand detail also shows your estimated
+  equity against the caller's likely range ("you had ~39% vs their estimated range"),
+  green when it beat the equity the call needed. The range comes from editable preflop
+  charts (the **Ranges** tab), narrowed by what the player did after the flop. It's an
+  estimate, not a solver.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
