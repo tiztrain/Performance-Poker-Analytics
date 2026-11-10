@@ -109,3 +109,13 @@ export async function completeLoginIfRedirected() {
     return 'Sign-in failed: could not reach the login server.';
   }
 }
+
+// The access token for calling our own APIs (the AI chat), or null when not signed in or expired.
+// API Gateway verifies its signature server-side; the browser only checks it hasn't expired.
+export function accessToken() {
+  if (!authEnabled) return null;
+  const tokens = readJson(KEY_TOKENS);
+  const token = tokens && tokens.accessToken;
+  if (!token || isExpired(decodeJwtPayload(token))) return null;
+  return token;
+}

@@ -104,6 +104,11 @@ infrastructure-as-code for hosting.
   spots show what you did, the pot odds and the flag, and you mark yourself. Drilled
   hands come back after 1, 3, 7 and 21 days while you keep getting them right, and
   after 1 day when you don't.
+- **Discuss with Claude (optional):** when the site is set up for it (see
+  `infra/README.md`), a **Discuss with Claude** button next to every Copy for Claude
+  button opens a chat about that hand inside the app. You need to be signed in; free
+  accounts get 3 messages a day. The hand is sent to the app's own API, not straight
+  to Anthropic from your browser, and opponents are still anonymised.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
@@ -142,7 +147,9 @@ this browser's IndexedDB (a database built into the browser, on this device only
 your history is there next time; **Clear saved history** deletes them. Other browser
 storage holds the login session in `sessionStorage` (cleared when the tab closes; a
 login lasts at most an hour) and your quiz answers and settings in `localStorage`
-until you press **Reset**. There is no analytics. The other external
+until you press **Reset**. If you use **Discuss with Claude**, that hand's text (opponents anonymised) and your
+messages are sent through the app's API to Anthropic to answer; nothing else is. There is
+no analytics. The other external
 requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
 
 ## Running it locally

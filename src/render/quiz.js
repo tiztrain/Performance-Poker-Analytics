@@ -27,6 +27,7 @@ import {
 } from '../engine/quiz.js';
 import { ALL_CELLS, cellName, countLive, scoreRange } from '../engine/rangeGrid.js';
 import { bindCopyButton } from './clipboard.js';
+import { bindChatButton, chatButtonHtml } from './chatPanel.js';
 import { cardsToIconStr } from './format.js';
 
 const STREET_LABELS = { preflop: 'Preflop', flop: 'Flop', turn: 'Turn', river: 'River' };
@@ -252,6 +253,7 @@ export function createQuizController(allHands) {
   function copyRowHtml() {
     return (
       '<div class="copy-row"><button class="copy-claude-btn" type="button">Copy for Claude</button>' +
+      chatButtonHtml() +
       '<span class="copy-hint">Copies this hand, your read and their real hand, to go over in a chat.</span></div>'
     );
   }
@@ -550,7 +552,9 @@ export function createQuizController(allHands) {
         answerType === 'advanced'
           ? 'Their hand was ' + (result.hit ? '' : 'not ') + 'in my range; I scored ' + result.points + ' out of 100.'
           : 'I scored ' + result.points + ' out of 100.';
-      bindCopyButton(mount, () => quizToClaudeText(item, st.street, readText, resultText));
+      const quizText = () => quizToClaudeText(item, st.street, readText, resultText);
+      bindCopyButton(mount, quizText);
+      bindChatButton(mount, quizText, 'Quiz: hand #' + item.hand.id);
     }
 
     if (item && st && answerType === 'advanced' && !result && isQuestion(st.street)) bindGrid(mount, item, st);

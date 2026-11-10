@@ -11,10 +11,13 @@
     "test:watch": "vitest",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "build:chat": "node scripts/build-chat-lambda.mjs"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "1.3.0",
     "@eslint/js": "^10.0.1",
+    "esbuild": "0.28.2",
     "eslint": "^10.14.0",
     "eslint-config-prettier": "^10.1.8",
     "globals": "^17.12.0",

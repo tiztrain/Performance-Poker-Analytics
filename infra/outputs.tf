@@ -42,3 +42,13 @@ output "cognito_user_pool_id" {
   description = "Cognito user pool ID, for finding the pool in the AWS console."
   value       = aws_cognito_user_pool.users.id
 }
+
+output "chat_api_url" {
+  description = "AI chat API address. Set it as the CHAT_API_URL repository variable (and VITE_CHAT_API_URL in .env.local)."
+  value       = var.enable_chat ? aws_apigatewayv2_api.chat[0].api_endpoint : ""
+}
+
+output "chat_key_parameter" {
+  description = "SSM parameter to put the Anthropic API key in (see chat.tf)."
+  value       = var.enable_chat ? aws_ssm_parameter.anthropic_key[0].name : ""
+}

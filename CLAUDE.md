@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project
 
 Client-side analyzer for CoinPoker tournament hand histories: vanilla JS (no framework, no TypeScript) built with Vite.
-There is no backend of our own. Loaded hands are saved in the browser's IndexedDB (`render/historyStore.js`, raw text
+The only backend is the optional AI chat (`backend/chat`, deployed by `infra/chat.tf` when `enable_chat` is on). Loaded hands are saved in the browser's IndexedDB (`render/historyStore.js`, raw text
 re-parsed on load by `engine/history.js`); quiz scores and settings, review-queue marks and drill schedules, and stat target overrides use `localStorage`. Optional login uses Amazon
 Cognito's hosted pages (phase 2); saving hand histories to an account is not built yet. See `README.md` for user-facing behavior and the bug case studies,
 `infra/README.md` for the AWS setup, and `docs/ROADMAP.md` for planned features and their build order.
@@ -80,6 +80,10 @@ Data flows one way:
   `session.js` does the redirects, `sessionStorage` and token request. Login is on only when `VITE_COGNITO_DOMAIN` and
   `VITE_COGNITO_CLIENT_ID` are set at build time, so the app must keep working with `authEnabled` false. Never decode a
   token to grant access in the browser: anything that trusts a token must verify its signature server-side.
+- **`backend/chat/`** is the AI chat's Lambda. `core.js` is pure (limits, budget, pricing, request building) and
+  tested with stand-ins; `handler.js` wires in DynamoDB, SSM, SNS and the Anthropic SDK. `npm run build:chat` bundles it
+  with esbuild (AWS SDK left external) into `infra/build/chat-lambda.zip`. The API key must never reach the browser.
+  The site shows the chat only when built with `VITE_CHAT_API_URL` and login on (`render/chatPanel.js`).
 - **`index.html`** contains all the CSS, inline in a `<style>` block, including the color variables the render code
   references. There are no separate stylesheets.
 

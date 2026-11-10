@@ -71,3 +71,40 @@ variable "auth_dev_redirect_urls" {
   type        = list(string)
   default     = ["http://localhost:5173/"]
 }
+
+# ---------- AI chat (see chat.tf) ----------
+variable "enable_chat" {
+  description = "Create the AI chat backend. Run `npm run build:chat` first, which builds infra/build/chat-lambda.zip."
+  type        = bool
+  default     = false
+}
+
+variable "chat_model" {
+  description = "Claude model the chat uses."
+  type        = string
+  default     = "claude-opus-5-5"
+}
+
+variable "chat_monthly_budget_usd" {
+  description = "Estimated spend at which the chat stops answering for the rest of the month. Also set a matching spend limit on the API key in the Anthropic Console as a hard backstop."
+  type        = number
+  default     = 10
+}
+
+variable "chat_free_daily_limit" {
+  description = "Messages a day for accounts outside the \"full\" Cognito group."
+  type        = number
+  default     = 3
+}
+
+variable "chat_full_daily_limit" {
+  description = "Messages a day for members of the \"full\" Cognito group."
+  type        = number
+  default     = 30
+}
+
+variable "alert_email" {
+  description = "Email address for budget alerts at 50%, 80% and 100%. AWS sends a confirmation link first. Leave blank for no email."
+  type        = string
+  default     = ""
+}

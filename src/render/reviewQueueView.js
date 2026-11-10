@@ -14,6 +14,7 @@ import { anonymizePlayers, describeAction, handToClaudeText } from '../engine/ha
 import { computeHandPositions } from '../engine/positions.js';
 import { formatDateLabel } from '../engine/grouping.js';
 import { bindCopyButton } from './clipboard.js';
+import { bindChatButton, chatButtonHtml } from './chatPanel.js';
 import { cardsToIconStr } from './format.js';
 
 const WORDS = { fold: 'Fold', call: 'Call', raise: 'Raise', shove: 'Shove all-in', check: 'Check', bet: 'Bet' };
@@ -257,6 +258,7 @@ export function createReviewQueueController(allHands) {
     }
     h +=
       '</div><div class="copy-row"><button class="copy-claude-btn" type="button">Copy for Claude</button>' +
+      chatButtonHtml() +
       '<span class="copy-hint">Copies this hand, the flag and your drill choice, to go over in a chat.</span></div></div>';
     return h;
   }
@@ -358,7 +360,7 @@ export function createReviewQueueController(allHands) {
     }
     if (drill && drill.choice) {
       const { item, decision, choice } = drill;
-      bindCopyButton(mount.querySelector('.quiz-hand'), () =>
+      const drillText = () =>
         handToClaudeText(
           item.hand,
           item.reasons.map(r => r.label),
@@ -370,8 +372,9 @@ export function createReviewQueueController(allHands) {
               "Review Hero's flagged decision: what were the options, what does the math and villain's likely range " +
               'say, and which choice was best? Judge the decision, not the result.',
           },
-        ),
-      );
+        );
+      bindCopyButton(mount.querySelector('.quiz-hand'), drillText);
+      bindChatButton(mount.querySelector('.quiz-hand'), drillText, 'Drill: hand #' + item.hand.id);
     }
   }
 
