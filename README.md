@@ -90,6 +90,13 @@ infrastructure-as-code for hosting.
   with the expected value you gave up in big blinds; click a row to see the chart. The
   charts assume chip value only (no prize-money effects), equal stacks and at most one
   caller, so near the bubble or at a final table tighter play can be right.
+- **Review queue and drills:** the **Review queue** tab ranks every flagged hand in your
+  history by the big blinds at stake and how serious the flag is. Each hand can be
+  marked reviewed, copied for Claude, or drilled: the hand replays to the flagged
+  decision and you choose again. Push/fold drills are scored against the chart; other
+  spots show what you did, the pot odds and the flag, and you mark yourself. Drilled
+  hands come back after 1, 3, 7 and 21 days while you keep getting them right, and
+  after 1 day when you don't.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
