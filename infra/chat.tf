@@ -5,7 +5,7 @@
 #   - SSM Parameter Store: holds the API key, encrypted (you put the value in by hand, below)
 #   - DynamoDB: counts messages per user per day and spend per month
 #   - SNS: emails you when spend passes 50%, 80% and 100% of the budget
-# Build the code first with `npm run build:chat` (creates infra/build/chat-lambda.zip).
+# Build the code first with `npm run build:lambdas` (creates infra/build/chat-lambda.zip).
 
 locals {
   chat           = var.enable_chat ? 1 : 0

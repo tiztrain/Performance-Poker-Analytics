@@ -159,7 +159,14 @@ result of hands with a bluff, average spot quality, and a list of every bluff wi
 
 ### 5.12 Cloud history
 
-Saves the browser data to the signed-in account (needs a small API and storage, designed when we get there).
+**Built, off until the owner switches it on** (steps in `infra/README.md`). When signed in, hands and settings sync
+automatically through `backend/sync` and `infra/history.tf`: API Gateway checks the Cognito token, a Lambda reads and
+writes only `users/<the token's sub>/` in a private, versioned S3 bucket. Hands upload as batches of up to 500 (one
+file each) after each analysis and, on a device's first sync, its existing history (minus anything it just
+downloaded); each device downloads only batches it hasn't seen. Settings (quiz answers and settings, review queue,
+targets, ranges) sync as one snapshot (`engine/sync.js`) on opening and when the page is hidden.
+
+- Next: delete-from-account (today, Clear saved history clears this browser only).
 
 ### 5.13 Play-quality score
 
@@ -266,3 +273,8 @@ Choices made while building without the owner present. Each can be changed; say 
   are counted by their chart cost only. Call and fold costs use the estimated range and ignore later streets (implied
   odds). A losing bluff costs bet × share of poor spot conditions, and only when the hand lost. Stages use the
   effective stack at the start of the hand.
+- **Cloud history (5.12):** merging: quiz answers and reviewed marks are combined; for drills the further-along
+  schedule wins; targets, ranges and quiz settings use a three-way merge against the last synced snapshot (if both
+  devices changed one, the device syncing now wins). Clear saved history doesn't touch the account copy, and a cleared
+  device doesn't re-download batches it had already seen. Old S3 versions are kept 30 days. Limits: 1,000 hands and
+  3 MB per request, 5,000 batches per user.

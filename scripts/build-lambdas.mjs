@@ -1,7 +1,7 @@
-// Builds infra/build/chat-lambda.zip, the AI chat's AWS Lambda code, for `terraform apply`.
-// Run with `npm run build:chat`.
-// 1. esbuild bundles backend/chat/handler.js and the Anthropic SDK into one file. The AWS SDK is
-//    left out because the Lambda Node.js runtime already includes it.
+// Builds the AWS Lambda code for `terraform apply`: infra/build/chat-lambda.zip (AI chat) and
+// infra/build/sync-lambda.zip (cloud history). Run with `npm run build:lambdas`.
+// 1. esbuild bundles each backend/*/handler.js (with the Anthropic SDK, for the chat) into one
+//    file. The AWS SDK is left out because the Lambda Node.js runtime already includes it.
 // 2. The bundle is zipped with Node's built-in compression, so this works the same on Windows,
 //    macOS and Linux without a separate zip tool.
 
@@ -13,19 +13,21 @@ import { fileURLToPath } from 'node:url';
 const outDir = new URL('../infra/build/', import.meta.url);
 mkdirSync(outDir, { recursive: true });
 
-const result = await build({
-  entryPoints: [fileURLToPath(new URL('../backend/chat/handler.js', import.meta.url))],
-  bundle: true,
-  platform: 'node',
-  target: 'node22',
-  format: 'esm',
-  external: ['@aws-sdk/*'],
-  write: false,
-  minify: true,
-  // Some bundled CommonJS code calls require(); give the ES module a working one.
-  banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
-});
-const code = Buffer.from(result.outputFiles[0].contents);
+async function bundle(entry) {
+  const result = await build({
+    entryPoints: [fileURLToPath(new URL(entry, import.meta.url))],
+    bundle: true,
+    platform: 'node',
+    target: 'node22',
+    format: 'esm',
+    external: ['@aws-sdk/*'],
+    write: false,
+    minify: true,
+    // Some bundled CommonJS code calls require(); give the ES module a working one.
+    banner: { js: "import { createRequire } from 'node:module'; const require = createRequire(import.meta.url);" },
+  });
+  return Buffer.from(result.outputFiles[0].contents);
+}
 
 // ---- Minimal zip writer: one file, deflate-compressed ----
 const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
@@ -82,10 +84,15 @@ function zipOne(name, data) {
   return Buffer.concat([local, nameBuf, compressed, central, nameBuf, end]);
 }
 
-const zip = zipOne('index.mjs', code);
-writeFileSync(new URL('chat-lambda.zip', outDir), zip);
-console.log(
-  `infra/build/chat-lambda.zip: ${(code.length / 1024).toFixed(0)} KB bundle, ${(zip.length / 1024).toFixed(0)} KB zipped`,
-);
-// Sanity check that the file round-trips.
-readFileSync(new URL('chat-lambda.zip', outDir));
+for (const [name, entry] of [
+  ['chat-lambda.zip', '../backend/chat/handler.js'],
+  ['sync-lambda.zip', '../backend/sync/handler.js'],
+]) {
+  const code = await bundle(entry);
+  const zip = zipOne('index.mjs', code);
+  writeFileSync(new URL(name, outDir), zip);
+  readFileSync(new URL(name, outDir)); // sanity check that the file round-trips
+  console.log(
+    `infra/build/${name}: ${(code.length / 1024).toFixed(0)} KB bundle, ${(zip.length / 1024).toFixed(0)} KB zipped`,
+  );
+}

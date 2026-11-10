@@ -32,5 +32,5 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Build the AI chat Lambda
-        run: npm run build:chat
+      - name: Build the Lambda functions (AI chat, cloud history)
+        run: npm run build:lambdas
