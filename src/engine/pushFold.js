@@ -45,7 +45,7 @@ export function equityLookup(table) {
 }
 
 // Hero's equity with cell i against a weighted range (freq[c] = how often cell c is played).
-function equityVsRange(eq, i, freq) {
+export function equityVsRange(eq, i, freq) {
   let num = 0;
   let den = 0;
   for (let c = 0; c < 169; c++) {
@@ -58,7 +58,7 @@ function equityVsRange(eq, i, freq) {
   return den ? num / den : 0.5;
 }
 
-function rangeShare(freq) {
+export function rangeShare(freq) {
   let w = 0;
   for (let c = 0; c < 169; c++) w += WEIGHTS[c] * freq[c];
   return w / TOTAL_COMBOS;

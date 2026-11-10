@@ -118,7 +118,12 @@ when the hand is opened.
 single shove, is checked against a Nash push/fold chart solved for that exact spot (stack, antes, blinds, players left
 to act) by fictitious play over a precomputed 169×169 preflop equity table. Differences are listed with their cost in
 big blinds (the EV given up against opponents playing the chart), and each spot's chart can be opened on the grid.
-Next: ICM-aware charts once payouts can be entered, and flags in the hand table.
+**ICM: done.** Paste a tournament's payout table from the lobby (for that tournament, or for every tournament with its
+name) and each spot gets an ICM (Independent Chip Model) verdict in prize money next to the chip chart, with the prize
+equity given up (`engine/icm.js`). Table-only ICM: the players at the table are the whole field, competing for the top
+prizes.
+
+- Next: flags in the hand table; ICM in the review queue and play-quality cost.
 
 ### 5.8 Drill mode and review queue
 
@@ -220,13 +225,11 @@ left, each with a hover tooltip and a table view:
 Done: login and account creation (PR #3), Copy for Claude (#5), collapsible load panel (#6), hand-reading quiz (#7),
 equity calculator and all-in EV (#9), saved history (#10), push/fold (#11), review queue and drills (#12), targets and
 more flags (#13), AI chat, switched off until set up (#14), range model (#15), bluff analysis (#16), play quality (#17),
-cloud history (#18), redesign (#19), range views (#20), trends.
+cloud history (#18), redesign (#19), range views (#20), trends (#21), ICM.
 
 Remaining, in order:
 
-1. ICM (Independent Chip Model: turns chip stacks into prize-money equity) with payouts pasted from the lobby, using
-   the players at the table as the field; push/fold checks become ICM-aware.
-2. Opponent database (5.10): optional and not built, by the owner's choice; it would come last.
+1. Opponent database (5.10): optional and not built, by the owner's choice; it would come last.
 
 ## 7. Working agreement
 
@@ -305,3 +308,8 @@ Choices made while building without the owner present. Each can be changed; say 
 - **Trends (5.16):** tournament charts use rolling windows of 5 tournaments, pooling their hands (so a short tournament
   weighs less) rather than averaging tournament values; quiz accuracy uses the last 20 answers. Play quality mixes
   formats (as its own tab does); stat trends never do. The luck chart's x-axis is all-in number, not date.
+- **ICM (5.7):** table-only, as the owner chose: the table's players compete for the top prizes (one per player), as
+  if it were the final table, so earlier in a tournament it overstates prize pressure (the UI says so). Opponents: the
+  shover uses the chip-EV Nash range; callers use an ICM best reply to it (call when it's worth more prize money than
+  folding). When Hero folds a shove spot, the big blind is assumed to collect the blinds and antes. Results are
+  averaged by equity (no separate tie handling). Payouts sync per tournament between devices.

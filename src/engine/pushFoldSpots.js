@@ -75,6 +75,9 @@ export function findPushFoldSpot(hand) {
       otherPosts: foldedFirst.reduce((t, p) => t + (posts[p] || 0), 0),
       heroIndex: null,
       position: computeHandPositions(hand).get('Hero'),
+      pusher: 'Hero',
+      callers: after,
+      order,
     };
   }
 
@@ -102,6 +105,9 @@ export function findPushFoldSpot(hand) {
     heroIndex: callers.indexOf('Hero'),
     position: computeHandPositions(hand).get('Hero'),
     pusherPosition: computeHandPositions(hand).get(pusher),
+    pusher,
+    callers,
+    order,
   };
 }
 
@@ -152,7 +158,7 @@ export function createPushFoldChecker(eq, { iterations = 300 } = {}) {
     // Cost: the EV given up. Folding a +EV shove or call loses its EV; shoving or calling a −EV
     // hand loses the EV's size.
     const cost = spot.did === chartAct ? 0 : Math.abs(ev);
-    return { hand, ...spot, cell, chartAct, ev, cost, range, rangeShare };
+    return { hand, ...spot, cell, chartAct, ev, cost, range, rangeShare, sol };
   };
 }
 

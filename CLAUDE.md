@@ -9,7 +9,7 @@ The only backends are optional: the AI chat (`backend/chat`, `infra/chat.tf`, `e
 (`backend/sync`, `infra/history.tf`, `enable_cloud_history`; browser side `render/cloudSync.js`, merging in
 `engine/sync.js`). Every key a new localStorage feature uses must be added to `SYNC_KEYS` in `engine/sync.js`, with a
 merge rule, if it should follow the user across devices. Loaded hands are saved in the browser's IndexedDB (`render/historyStore.js`, raw text
-re-parsed on load by `engine/history.js`); quiz scores and settings, review-queue marks and drill schedules, and stat target overrides use `localStorage`. Optional login uses Amazon
+re-parsed on load by `engine/history.js`); quiz scores and settings, review-queue marks and drill schedules, stat target overrides and ICM payouts use `localStorage`. Optional login uses Amazon
 Cognito's hosted pages (phase 2); saving hand histories to an account is not built yet. See `README.md` for user-facing behavior and the bug case studies,
 `infra/README.md` for the AWS setup, and `docs/ROADMAP.md` for planned features and their build order.
 
