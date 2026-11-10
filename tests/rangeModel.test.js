@@ -133,3 +133,35 @@ describe('createRangeStore', () => {
     expect(s.load()).toEqual({});
   });
 });
+
+describe('range views', () => {
+  it('averages combo weights per cell for the heat map', async () => {
+    const { cellWeights } = await import('../src/engine/rangeModel.js');
+    const w = cellWeights([
+      { cards: ['As', 'Ah'], w: 1 },
+      { cards: ['Ad', 'Ac'], w: 0.5 },
+      { cards: ['Ks', 'Qs'], w: 0.25 },
+    ]);
+    expect(w[ALL_CELLS.indexOf('AA')]).toBeCloseTo(0.75, 10);
+    expect(w[ALL_CELLS.indexOf('KQs')]).toBeCloseTo(0.25, 10);
+    expect(w[ALL_CELLS.indexOf('KQo')]).toBe(0);
+  });
+
+  it('measures how much of the model a painted range covers', async () => {
+    const { compareWithModel } = await import('../src/engine/rangeModel.js');
+    const combos = [
+      { cards: ['As', 'Ah'], w: 1 },
+      { cards: ['Ks', 'Qs'], w: 3 },
+    ];
+    const r = compareWithModel(new Set(['AA']), combos);
+    expect(r.coverage).toBeCloseTo(0.25, 10);
+    expect(r.modelShare).toBeCloseTo(4 / 1326, 10);
+  });
+
+  it('picks the last bettor as the villain to show', async () => {
+    const { mainVillain } = await import('../src/engine/rangeModel.js');
+    const hand = parseAll(SAMPLE)[1];
+    expect(mainVillain(hand, 'preflop')).toBe('6c92fa0e');
+    expect(mainVillain(hand, 'river')).toBe('6c92fa0e'); // still in after calling the river
+  });
+});

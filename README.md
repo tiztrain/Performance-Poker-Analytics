@@ -123,6 +123,9 @@ infrastructure-as-code for hosting.
   green when it beat the equity the call needed. The range comes from editable preflop
   charts (the **Ranges** tab), narrowed by what the player did after the flop. It's an
   estimate, not a solver.
+- **Villain's estimated range:** each hand's detail shows a heat map of the main opponent's
+  likely hands street by street (an estimate from the range model), with their real hand outlined
+  when it was shown. In the advanced quiz, your painted range is compared with the same estimate.
 - **Bluffs:** the **Bluffs** tab classifies each of your bets after the flop as value,
   thin value, semi-bluff or bluff from your estimated equity against the range that
   would call. It shows your river bluff share against the balanced share for your bet

@@ -17,7 +17,7 @@ import {
 import { renderImpactChart } from './chart.js';
 import { bindCopyButton } from './clipboard.js';
 import { bindChatButton, chatButtonHtml } from './chatPanel.js';
-import { fillRangeEquity } from './rangeEquity.js';
+import { fillRangeEquity, fillVillainRange } from './rangeEquity.js';
 import { bindTargetEditors, statGridHtml } from './statGrid.js';
 import { requiredEquity } from '../engine/moreFlags.js';
 
@@ -121,7 +121,10 @@ export function bindChartAndTable(hands, mountEl) {
         if (detail && detail.classList.contains('detail')) {
           detail.classList.add('open');
           const hand = hands.find(x => x.id === handId);
-          if (hand) fillRangeEquity(detail, hand);
+          if (hand) {
+            fillRangeEquity(detail, hand);
+            fillVillainRange(detail, hand);
+          }
         }
       }
     });
@@ -358,6 +361,14 @@ export function bindChartAndTable(hands, mountEl) {
           });
         detailHtml += '</div>';
       }
+      // Lazily filled when the hand is opened (needs the range model).
+      if (
+        h.heroCards &&
+        h.streets.preflop.some(a => a.player !== 'Hero' && a.action !== 'post' && a.action !== 'fold')
+      ) {
+        detailHtml +=
+          '<div class="street-block"><div class="street-name">Villain’s estimated range</div><div class="villain-range"></div></div>';
+      }
       detailHtml +=
         '<div class="copy-row"><button class="copy-claude-btn" type="button">Copy for Claude</button>' +
         chatButtonHtml() +
@@ -371,7 +382,10 @@ export function bindChartAndTable(hands, mountEl) {
 
       row.addEventListener('click', () => {
         detail.classList.toggle('open');
-        if (detail.classList.contains('open')) fillRangeEquity(detail, h);
+        if (detail.classList.contains('open')) {
+          fillRangeEquity(detail, h);
+          fillVillainRange(detail, h);
+        }
       });
     });
   }
