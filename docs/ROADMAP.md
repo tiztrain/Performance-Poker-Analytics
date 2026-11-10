@@ -149,14 +149,13 @@ depends on those IDs being stable (open question 1).
 
 ### 5.11 Bluff analysis
 
-Classifies hero's bets as value, thin value, semi-bluff (a bluff with a draw) or pure bluff, using equity against the
-range model rather than against a random hand. Measures:
+**Done:** a **Bluffs** tab over every loaded hand (`engine/bluffs.js`). Each Hero bet or raise after the flop is
+classified by Hero's equity against the range that would call it (the range model, narrowed by the "call" weights):
+value, thin value, semi-bluff or bluff. It reports the river bluff share against the balanced share `b / (p + 2b)` for
+Hero's sizes, how often bluffs and semi-bluffs won straight away against the break-even fold rate `b / (p + b)`, the
+result of hands with a bluff, average spot quality, and a list of every bluff with its conditions.
 
-- frequency, against the balanced river bluff share `b / (p + 2b)` (`b` is the bet and `p` the pot before it)
-- fold rate, against the break-even rate `b / (p + b)`
-- spot selection: blockers, villain weakness, number of opponents
-
-All of these are measured over saved history, not per tournament.
+- Next: blockers (cards in Hero's hand that make villain's strong hands less likely) as a spot-quality condition.
 
 ### 5.12 Cloud history
 
@@ -252,3 +251,9 @@ Choices made while building without the owner present. Each can be changed; say 
   draw / nothing): bet ≥60% pot 1/0.7/0.2/0.6/0.25, smaller bet 1/0.9/0.5/0.6/0.4, raise 1/0.5/0.1/0.5/0.2, call
   0.6/1/0.8/1/0.15, check 0.5/0.8/1/0.9/1. Shoves use the same charts as raises. Equity is against the player whose bet
   Hero called, even in multiway pots; 3,000 samples (about ±1%).
+- **Bluff analysis (5.11):** equity is against the opponent who acted last on the street (or the first still in), with
+  their range narrowed as if they call. River: value above 50%, bluff under 30%, thin between. Flop and turn: value above
+  50%; a draw is a semi-bluff; a pair with 30%+ is thin; 30%+ with no pair or draw is a semi-bluff. "Won straight away"
+  means every opponent folded to that bet. Verdicts: under-bluffing below half the balanced share, over-bluffing above
+  1.25×. Spot quality conditions: heads-up, the opponent checked earlier on the street or checked without betting on
+  the previous one, a draw (flop/turn), no showdown value (river), not all-in. 1,500 samples per flop/turn bet.

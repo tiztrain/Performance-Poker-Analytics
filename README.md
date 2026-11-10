@@ -114,6 +114,14 @@ infrastructure-as-code for hosting.
   green when it beat the equity the call needed. The range comes from editable preflop
   charts (the **Ranges** tab), narrowed by what the player did after the flop. It's an
   estimate, not a solver.
+- **Bluffs:** the **Bluffs** tab classifies each of your bets after the flop as value,
+  thin value, semi-bluff or bluff from your estimated equity against the range that
+  would call. It shows your river bluff share against the balanced share for your bet
+  sizes (bluffs should be b ÷ (p + 2b) of river bets: 25% at half pot), how often your
+  bluffs won straight away against the break-even fold rate (b ÷ (p + b): 33% at half
+  pot), and a list of every bluff with the conditions it had (heads-up, opponent showed
+  weakness, a draw as backup, no showdown value, chips behind). Estimates, not solver
+  output, and they need many hands to settle.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 

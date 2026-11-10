@@ -14,6 +14,7 @@ import { createAllInController } from './allInEvView.js';
 import { createPushFoldController } from './pushFoldView.js';
 import { createReviewQueueController } from './reviewQueueView.js';
 import { createRangesController } from './rangesView.js';
+import { createBluffsController } from './bluffsView.js';
 
 export function renderResults(allHands) {
   const container = document.getElementById('results');
@@ -28,6 +29,7 @@ export function renderResults(allHands) {
   const pushFold = createPushFoldController(allHands);
   const reviewQueue = createReviewQueueController(allHands);
   const rangesView = createRangesController();
+  const bluffs = createBluffsController(allHands);
 
   // Tournament selection persists by the group's unique key (name+tournamentId, not
   // name alone - recurring tournaments reuse the same display name every occurrence)
@@ -73,6 +75,7 @@ export function renderResults(allHands) {
       tab('allin', 'All-in EV (' + allIns.spotCount + ')') +
       tab('pushfold', 'Push/fold (' + pushFold.spotCount + ')') +
       tab('review', 'Review queue') +
+      tab('bluffs', 'Bluffs') +
       tab('ranges', 'Ranges') +
       '</div></div>'
     );
@@ -214,6 +217,12 @@ export function renderResults(allHands) {
   }
 
   function rerender() {
+    if (activeView === 'bluffs') {
+      container.innerHTML = viewToggleHtml() + '<div id="bluffs-mount"></div>';
+      bluffs.render(document.getElementById('bluffs-mount'));
+      bindBars();
+      return;
+    }
     if (activeView === 'ranges') {
       container.innerHTML = viewToggleHtml() + '<div id="ranges-mount"></div>';
       rangesView.render(document.getElementById('ranges-mount'));
