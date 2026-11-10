@@ -163,9 +163,13 @@ Saves the browser data to the signed-in account (needs a small API and storage, 
 
 ### 5.13 Play-quality score
 
-Shown in two units, each split by tournament stage (deep, middle, short): big blinds per 100 hands (each hand in its own
-big blind), and % of stack lost, because a 5bb mistake at 15bb deep hurts far more than at 100bb. Built from objective checks (push/fold deviations, calls below required equity,
-all-in EV, flag costs), with a breakdown, the best and costliest decisions, and a trend against your own average.
+**Done:** a **Play quality** tab (`engine/quality.js`). Estimated mistake cost from push/fold deviations (exact),
+calls with less estimated equity than needed and folds with more (after the flop, or preflop facing an all-in), and
+losing bluffs in weak spots. Shown across saved history and per tournament, in bb per 100 hands and % of stack per 100
+hands, split by stage (deep 40bb+, middle 15–40bb, short under 15bb), with the last 10 tournaments against the long-run
+average and each tournament's three costliest decisions. No 1–10 rating (owner's choice).
+
+- Next: "best decisions" alongside the costliest; a chart of the trend over time.
 
 ### 5.14 In-app AI discussion
 
@@ -257,3 +261,8 @@ Choices made while building without the owner present. Each can be changed; say 
   means every opponent folded to that bet. Verdicts: under-bluffing below half the balanced share, over-bluffing above
   1.25×. Spot quality conditions: heads-up, the opponent checked earlier on the street or checked without betting on
   the previous one, a draw (flop/turn), no showdown value (river), not all-in. 1,500 samples per flop/turn bet.
+- **Play quality (5.13):** preflop calls and folds only count when facing an all-in (with betting still to come, raw
+  equity overstates what a hand can win, so nearly every big-blind fold would look like a missed call); push/fold spots
+  are counted by their chart cost only. Call and fold costs use the estimated range and ignore later streets (implied
+  odds). A losing bluff costs bet × share of poor spot conditions, and only when the hand lost. Stages use the
+  effective stack at the start of the hand.

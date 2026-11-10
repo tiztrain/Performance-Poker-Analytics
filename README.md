@@ -122,6 +122,13 @@ infrastructure-as-code for hosting.
   pot), and a list of every bluff with the conditions it had (heads-up, opponent showed
   weakness, a draw as backup, no showdown value, chips behind). Estimates, not solver
   output, and they need many hands to settle.
+- **Play quality:** the **Play quality** tab estimates what your mistakes cost: push/fold
+  deviations (exact against the chart), calls with less equity than they needed and folds
+  with more (against the estimated range), and losing bluffs in weak spots. It shows big
+  blinds lost per 100 hands and % of your stack per 100 hands, by stage (deep, middle,
+  short), across your history and per tournament, with your last 10 tournaments against
+  your average and each tournament's costliest decisions. Lower is better, and it judges
+  decisions, never results.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 
