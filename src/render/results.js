@@ -11,6 +11,7 @@ import { renderStatsAndTable, renderCombined } from './table.js';
 import { dayFormatFilterHtml, dayDateFilterHtml, dayComparisonHtml } from './dayCompare.js';
 import { createQuizController } from './quiz.js';
 import { createAllInController } from './allInEvView.js';
+import { createPushFoldController } from './pushFoldView.js';
 
 export function renderResults(allHands) {
   const container = document.getElementById('results');
@@ -22,6 +23,7 @@ export function renderResults(allHands) {
   // Created once per load, so redraws (e.g. the BB/chips toggle) keep your place in the quiz.
   const quiz = createQuizController(allHands);
   const allIns = createAllInController(allHands);
+  const pushFold = createPushFoldController(allHands);
 
   // Tournament selection persists by the group's unique key (name+tournamentId, not
   // name alone - recurring tournaments reuse the same display name every occurrence)
@@ -65,6 +67,7 @@ export function renderResults(allHands) {
       (multiDay ? tab('daycompare', 'Day comparison') : '') +
       tab('quiz', 'Hand-reading quiz (' + quiz.itemCount + ')') +
       tab('allin', 'All-in EV (' + allIns.spotCount + ')') +
+      tab('pushfold', 'Push/fold (' + pushFold.spotCount + ')') +
       '</div></div>'
     );
   }
@@ -205,6 +208,12 @@ export function renderResults(allHands) {
   }
 
   function rerender() {
+    if (activeView === 'pushfold') {
+      container.innerHTML = viewToggleHtml() + '<div id="pf-mount"></div>';
+      pushFold.render(document.getElementById('pf-mount'));
+      bindBars();
+      return;
+    }
     if (activeView === 'allin') {
       container.innerHTML = viewToggleHtml() + '<div id="allin-mount"></div>';
       allIns.render(document.getElementById('allin-mount'));

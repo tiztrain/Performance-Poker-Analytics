@@ -53,6 +53,9 @@ npm run format:check                   # Prettier, check only
 npm run build                          # production build to dist/
 ```
 
+`src/engine/preflopEquity.json` (169×169 all-in equities used by push/fold) is generated, not hand-written: rebuild it
+with `node scripts/build-preflop-equity.mjs` (about 17 minutes) if the evaluator or sampling changes.
+
 CI runs lint, format check, test and build. The format check covers the whole repo, including Markdown, so run
 `npm run format` after editing docs too.
 

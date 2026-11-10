@@ -83,6 +83,13 @@ infrastructure-as-code for hosting.
   all-ins are exact; preflop ones (marked ≈) are estimated from 20,000 random boards,
   accurate to about half a percent. All-ins where an opponent mucked are listed as
   skipped.
+- **Push/fold:** the **Push/fold** tab checks every hand at 15 big blinds or less
+  (effective) where you were first in, or facing a single shove. Each spot gets its own
+  Nash push/fold chart (the game-theory shoving and calling ranges) for that stack, those
+  antes and that number of players left to act. Differences are listed costliest first,
+  with the expected value you gave up in big blinds; click a row to see the chart. The
+  charts assume chip value only (no prize-money effects), equal stacks and at most one
+  caller, so near the bubble or at a final table tighter play can be right.
 - **Stack-impact chart:** bb or chips won and lost on each hand, in time order.
 - **Hand table**, with these filters:
 

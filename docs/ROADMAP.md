@@ -106,8 +106,11 @@ the model against reality.
 
 ### 5.7 Push/fold checks
 
-For stacks under about 15 big blinds, compare shoves, calls of shoves, and folds with Nash push/fold charts (game-theory
-tables of correct all-in and call ranges by stack size and position), in chip terms. Flags deviations with their cost.
+**Done:** a **Push/fold** tab. Every spot at 15 big blinds or less (effective) where Hero was first in, or faced a
+single shove, is checked against a Nash push/fold chart solved for that exact spot (stack, antes, blinds, players left
+to act) by fictitious play over a precomputed 169×169 preflop equity table. Differences are listed with their cost in
+big blinds (the EV given up against opponents playing the chart), and each spot's chart can be opened on the grid.
+Next: ICM-aware charts once payouts can be entered, and flags in the hand table.
 
 ### 5.8 Drill mode and review queue
 
@@ -208,3 +211,9 @@ Choices made while building without the owner present. Each can be changed; say 
   stats over your whole history. The built-in sample is never saved. The last-N window only appears once more than
   1,000 hands are saved. Breakdowns show VPIP, PFR, 3-bet, fold to 3-bet, c-bet, WTSD and bb won; other stats can be
   added. Hands are stored as raw text and parsed again on load, so parser fixes apply to old hands too.
+- **Push/fold (5.7):** shown as its own tab (like all-in EV), not as tags in the hand table. Standard chart
+  simplifications: chip EV, every player at the spot's effective stack, at most one caller, card removal ignored.
+  "Shove" means putting in 95% or more of the stack; limps and smaller raises are skipped. Spots are solved at the
+  stack rounded to 0.5bb. The equity table is 20,000 random boards per matchup (about ±0.35%; checked within 0.7% of
+  high-precision values), built by
+  `scripts/build-preflop-equity.mjs`.
