@@ -74,7 +74,7 @@ variable "auth_dev_redirect_urls" {
 
 # ---------- AI chat (see chat.tf) ----------
 variable "enable_chat" {
-  description = "Create the AI chat backend. Run `npm run build:chat` first, which builds infra/build/chat-lambda.zip."
+  description = "Create the AI chat backend. Run `npm run build:lambdas` first, which builds infra/build/chat-lambda.zip."
   type        = bool
   default     = false
 }
@@ -107,4 +107,10 @@ variable "alert_email" {
   description = "Email address for budget alerts at 50%, 80% and 100%. AWS sends a confirmation link first. Leave blank for no email."
   type        = string
   default     = ""
+}
+
+variable "enable_cloud_history" {
+  description = "Create the cloud history backend (history.tf), which saves each signed-in user's hands and settings to S3. Run `npm run build:lambdas` first."
+  type        = bool
+  default     = false
 }

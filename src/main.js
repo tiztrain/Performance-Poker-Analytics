@@ -7,6 +7,7 @@ import { SAMPLE } from './sample-hand.js';
 import { displayMode, currentRerender, setDisplayMode } from './state.js';
 import { authEnabled, completeLoginIfRedirected, currentUser, login, logout, signup } from './auth/session.js';
 import { renderAccount } from './render/account.js';
+import { createCloudSync } from './render/cloudSync.js';
 
 // ---------- Optional login ----------
 // Hidden entirely when the build has no Cognito settings (see .env.example).
@@ -17,7 +18,7 @@ async function initAccount() {
   renderAccount(el, { user: currentUser(), error, onLogin: login, onSignup: signup, onLogout: logout });
   el.hidden = false;
 }
-initAccount();
+const accountReady = initAccount();
 
 document.getElementById('load-sample').addEventListener('click', () => {
   document.getElementById('hh-input').value = SAMPLE;
@@ -65,6 +66,9 @@ document.querySelectorAll('.unit-btn').forEach(btn => {
 // before, so stats cover all your sessions. Hands are keyed by hand ID, so loading the same file
 // twice changes nothing. The built-in sample is shown on its own and never saved.
 const history = createHistoryStore();
+// Cloud history (null unless the site is built with VITE_SYNC_API_URL and login is on).
+const cloud = createCloudSync(history);
+let cloudNote = '';
 const resultsEl = document.getElementById('results');
 const emptyResultsHtml = resultsEl.innerHTML;
 
@@ -90,9 +94,17 @@ document.getElementById('analyze-btn').addEventListener('click', async () => {
       showParseError('no hands starting "CoinPoker Hand #" with a hand number were found');
       return;
     }
-    const added = countNew(await history.ids(), records);
+    const savedIds = new Set(await history.ids());
+    const fresh = records.filter((r, i) => !savedIds.has(r.id) && records.findIndex(x => x.id === r.id) === i);
+    const added = countNew([...savedIds], records);
     await history.putMany(records);
-    showHistory(`${added} new hand${added === 1 ? '' : 's'} added. `);
+    await showHistory(`${added} new hand${added === 1 ? '' : 's'} added. `);
+    if (cloud && fresh.length) {
+      cloud
+        .pushRecords(fresh)
+        .then(() => setCloudNote(' Synced to your account.'))
+        .catch(() => setCloudNote(' Couldn’t sync to your account; it will retry next time you open the app.'));
+    }
   } catch (e) {
     showParseError(e.message);
   }
@@ -107,7 +119,8 @@ async function showHistory(prefix = '') {
   collapseLoadPanel(
     prefix +
       `${hands.length} hand${hands.length === 1 ? '' : 's'} from ${tournaments} tournament` +
-      `${tournaments === 1 ? '' : 's'}, ${where}.`,
+      `${tournaments === 1 ? '' : 's'}, ${where}.` +
+      cloudNote,
   );
   clearHistoryBtn.hidden = false;
   return true;
@@ -137,12 +150,39 @@ function collapseLoadPanel(summary) {
 loadToggle.addEventListener('click', () => setLoadPanelOpen(loadBody.hidden));
 
 clearHistoryBtn.addEventListener('click', async () => {
-  if (!window.confirm('Delete every hand saved in this browser? Your hand-history files are not affected.')) return;
+  const cloudCopy = cloud ? ' The copy in your account is kept.' : '';
+  if (!window.confirm('Delete every hand saved in this browser? Your hand-history files are not affected.' + cloudCopy))
+    return;
   await history.clear();
   resultsEl.innerHTML = emptyResultsHtml;
   loadSummary.hidden = true;
   setLoadPanelOpen(true);
 });
 
-// Open straight into the saved history, if there is one.
-showHistory();
+function setCloudNote(note) {
+  cloudNote = note;
+  const el = document.getElementById('load-summary-text');
+  if (!loadSummary.hidden && el.textContent)
+    el.textContent = el.textContent.replace(/ (Synced|Couldn’t sync)[^]*$/, '') + note;
+}
+
+// Open straight into the saved history, if there is one. Signed in with cloud history on, first
+// bring in anything saved from other devices.
+(async () => {
+  if (cloud) {
+    await accountReady;
+    try {
+      if ((await cloud.pull()) === 'synced') cloudNote = ' Synced with your account.';
+    } catch {
+      cloudNote = ' Couldn’t reach your account; showing this browser’s history.';
+    }
+  }
+  showHistory();
+})();
+
+// Save settings (quiz, review queue, targets, ranges) to the account when leaving the page.
+if (cloud) {
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'hidden') cloud.pushSettings(true).catch(() => {});
+  });
+}

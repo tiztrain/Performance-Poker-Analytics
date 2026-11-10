@@ -99,7 +99,7 @@ Claude usage itself, capped by the budget below. It's off until you switch it on
 2. **Build the Lambda code**, from the project folder:
    ```powershell
    npm install
-   npm run build:chat
+   npm run build:lambdas
    ```
    This creates `infra/build/chat-lambda.zip` (not committed).
 3. **Switch it on** in `infra/terraform.tfvars`:
@@ -127,7 +127,23 @@ Claude usage itself, capped by the budget below. It's off until you switch it on
 
 The budget in the app is an estimate from token counts reported by the API; the Console
 spend limit is what actually stops charges. After changing the chat code, run
-`npm run build:chat` and `terraform apply` again to redeploy it.
+`npm run build:lambdas` and `terraform apply` again to redeploy it.
+
+### Turning on cloud history
+
+Cloud history (`history.tf`) saves each signed-in user's hands and settings to their own
+folder in a private S3 bucket, so their history is on every device. Same pattern as the
+chat: API Gateway checks the Cognito login, and a Lambda reads and writes only the folder
+named after that user's ID. Storage costs are a fraction of a cent per thousand hands.
+
+1. `npm run build:lambdas` (builds `infra/build/sync-lambda.zip`, and the chat's).
+2. Add `enable_cloud_history = true` to `infra/terraform.tfvars`.
+3. `terraform plan`, check it only adds history resources, then `terraform apply`.
+4. Add the repository variable `SYNC_API_URL` with `terraform output -raw sync_api_url`,
+   then run the **Deploy** workflow (or put it in `.env.local` as `VITE_SYNC_API_URL`).
+
+The bucket keeps old versions of each file for 30 days. Deleting the bucket deletes every
+user's synced history.
 
 ## Notes / things worth knowing
 

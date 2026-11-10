@@ -1,6 +1,6 @@
 // ---------- AI chat backend: AWS Lambda entry point ----------
 // Wires the pure logic in core.js to the real services. Bundled into one file by
-// scripts/build-chat-lambda.mjs (the AWS SDK is already in the Lambda runtime, so it isn't
+// scripts/build-lambdas.mjs (the AWS SDK is already in the Lambda runtime, so it isn't
 // bundled). Configuration comes from environment variables set by infra/chat.tf.
 //
 // The model provider is swappable: CHAT_PROVIDER=anthropic is the only one today. A self-hosted

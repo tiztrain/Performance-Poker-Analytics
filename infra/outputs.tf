@@ -52,3 +52,8 @@ output "chat_key_parameter" {
   description = "SSM parameter to put the Anthropic API key in (see chat.tf)."
   value       = var.enable_chat ? aws_ssm_parameter.anthropic_key[0].name : ""
 }
+
+output "sync_api_url" {
+  description = "Cloud history API address. Set it as the SYNC_API_URL repository variable (and VITE_SYNC_API_URL in .env.local)."
+  value       = var.enable_cloud_history ? aws_apigatewayv2_api.sync[0].api_endpoint : ""
+}

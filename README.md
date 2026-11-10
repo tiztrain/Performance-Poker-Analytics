@@ -25,7 +25,9 @@ infrastructure-as-code for hosting.
    Every upload is saved in this browser and merged with what you loaded before, so the
    app opens straight into your whole history next time. Loading the same file twice
    changes nothing (hands are matched by hand number), and the sample is never saved.
-   **Clear saved history** deletes it.
+   **Clear saved history** deletes it from this browser. If the site has cloud history
+   set up and you're signed in, your hands and settings also sync to your account, so
+   they appear on every device you sign in on.
 2. Pick what to look at. Every tournament starts selected; tournaments are listed by
    format, and you can narrow the selection. With more than 1,000 hands saved you can
    also limit the stats to your last 1,000 (or 5,000) hands. If the hands span more than one day, you also get date filters and a
@@ -167,7 +169,9 @@ this browser's IndexedDB (a database built into the browser, on this device only
 your history is there next time; **Clear saved history** deletes them. Other browser
 storage holds the login session in `sessionStorage` (cleared when the tab closes; a
 login lasts at most an hour) and your quiz answers and settings in `localStorage`
-until you press **Reset**. If you use **Discuss with Claude**, that hand's text (opponents anonymised) and your
+until you press **Reset**. If the site has cloud history set up and you're signed in, your saved hands and settings
+are also stored in your account (a private folder in the app's AWS storage) so they're on
+every device. If you use **Discuss with Claude**, that hand's text (opponents anonymised) and your
 messages are sent through the app's API to Anthropic to answer; nothing else is. There is
 no analytics. The other external
 requests are the web fonts, loaded from Google Fonts, and the Cognito login itself.
