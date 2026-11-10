@@ -114,9 +114,11 @@ Next: ICM-aware charts once payouts can be entered, and flags in the hand table.
 
 ### 5.8 Drill mode and review queue
 
-- **Review queue:** hands to study, ranked by big blinds at stake and how severe the flag is, with a "reviewed" state.
-- **Drill:** replay a hand to the decision point, choose an action, then see the analysis. Missed spots come back at
-  growing intervals (spaced repetition).
+**Done:** a **Review queue** tab ranks every flagged hand (all stat flags, push/fold mistakes, and all-in swings of
+10bb or more) by bb at stake × flag weight. Each hand can be marked reviewed, copied for Claude, or drilled: the hand
+replays to the flagged decision and Hero picks an action. Push/fold drills are scored against the chart; others show
+the facts (what Hero did, pot odds, the flag) and are self-marked. Drills come back after 1, 3, 7 and 21 days while
+right, and after 1 day when wrong.
 
 ### 5.9 More flags and columns
 
@@ -217,3 +219,8 @@ Choices made while building without the owner present. Each can be changed; say 
   stack rounded to 0.5bb. The equity table is 20,000 random boards per matchup (about ±0.35%; checked within 0.7% of
   high-precision values), built by
   `scripts/build-preflop-equity.mjs`.
+- **Review queue (5.8):** ranking weights are judgement calls: expensive call and weak continue 1 × call size;
+  push/fold mistake 5 × its EV cost; cheap fold 0.5 × pot; race 0.5 × chips in; missed 3-bet 0.3 × open size; all-in
+  swing of 10bb+ 0.2 × swing. A hand's drill stops at its most important flagged decision (push/fold first, then
+  expensive call, weak continue, cheap fold, missed 3-bet, race). Only push/fold drills are scored automatically;
+  others are self-marked because there's no solver. Reviewed marks and drill schedules are kept in `localStorage`.

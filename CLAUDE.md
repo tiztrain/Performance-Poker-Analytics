@@ -6,7 +6,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Client-side analyzer for CoinPoker tournament hand histories: vanilla JS (no framework, no TypeScript) built with Vite.
 There is no backend of our own. Loaded hands are saved in the browser's IndexedDB (`render/historyStore.js`, raw text
-re-parsed on load by `engine/history.js`); quiz scores and settings use `localStorage`. Optional login uses Amazon
+re-parsed on load by `engine/history.js`); quiz scores and settings, and review-queue marks and drill schedules, use `localStorage`. Optional login uses Amazon
 Cognito's hosted pages (phase 2); saving hand histories to an account is not built yet. See `README.md` for user-facing behavior and the bug case studies,
 `infra/README.md` for the AWS setup, and `docs/ROADMAP.md` for planned features and their build order.
 
